@@ -67,7 +67,8 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "big.js": "^6.2.2"
+    "big.js": "^6.2.2",
+    "country-to-currency": "^2.0.2"
   },
   "peerDependencies": {}
 }

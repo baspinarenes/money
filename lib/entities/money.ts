@@ -7,10 +7,10 @@ export class Money {
 
   constructor(amount: number) {
     if (!Number.isFinite(amount)) {
-      throw new Error(`${LOG_PREFIX} Invalid money amount: ${amount}`);
+      this._amount = 0;
+    } else {
+      this._amount = amount;
     }
-
-    this._amount = amount;
   }
 
   get amount(): number {
@@ -26,12 +26,25 @@ export class Money {
   }
 
   get fraction(): number {
+    const { value } = this.handleFraction();
+    return value;
+  }
+
+  get formattedFraction(): string {
+    const { formatted } = this.handleFraction();
+    return formatted;
+  }
+
+  private handleFraction() {
     const fractionPart = minus(this.amount, this.integer);
-    if (fractionPart === 0) return 0;
     const fractionString = fractionPart.toString();
     const decimalPart = fractionString.substring(fractionString.indexOf(".") + 1);
     const precision = decimalPart.length;
-    return multiply(fractionPart, pow(10, precision));
+
+    return {
+      value: multiply(fractionPart, pow(10, precision)),
+      formatted: decimalPart,
+    };
   }
 
   add(amount: number | Money): Money {
