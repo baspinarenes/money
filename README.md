@@ -131,6 +131,33 @@ Compares the current `Money` instance to another amount or `Money` instance. Ret
 const isEqual = money.equal(1234.567); // true
 ```
 
+`format(options: MoneyFormatterOptions): string`
+
+Formats the `Money` instance into a string representation according to the provided [formatting options](#formatting).
+
+```typescript
+const formattedMoney = money.format({ locale: "GB" }); // result for example: £1,234.567
+```
+
+`formatToParts(options: MoneyFormatterOptions): MoneyFormat`
+
+Formats the `Money` instance into an object with separate parts, like integer and fractional values, according to the provided [formatting options](#formatting).
+
+```typescript
+const formattedMoneyParts = money.formatToParts({ locale: "GB" });
+
+/*
+result for example: {
+  currency: '£',
+  value: 1234.567,
+  integer: '1,234',
+  fraction: '.567',
+  formatted: '1,234.567',
+  display: '£1,234.567'
+}
+*/
+```
+
 `valueOf(): number`
 
 Returns the amount of the `Money` instance.
@@ -147,13 +174,138 @@ Returns a string representation of the `Money` instance.
 const stringValue = money.toString(); // '1234.567'
 ```
 
+### MoneyFormatter Class
+
+The `MoneyFormatter` class is responsible for formatting monetary values according to specific locale-based templates. It takes into account local conventions such as currency symbols, decimal separators, and grouping separators.
+
+#### Constructor
+
+`new MoneyFormatter(options: MoneyFormatterOptions)`
+
+Creates a new `MoneyFormatter` instance with the provided options.
+
+```typescript
+const formatter = new MoneyFormatter({ locale: "tr-TR" });
+```
+
+**Parameters:**
+
+- `options` (MoneyFormatterOptions): Configuration options for [formatting](#formatting) the money value.
+
+**Throws:**
+
+- Throws an error if the `locale` option is invalid.
+
+#### Static Method
+
+##### `create(options: MoneyFormatterOptions): MoneyFormatter`
+
+Creates and returns a new instance of `MoneyFormatter` with the given options.
+
+```typescript
+const formatter = MoneyFormatter.create({ locale: "en-US" });
+```
+
+#### Methods
+
+##### `format(money: number | Money, formatOptions?: Partial<MoneyFormatterOptions>): string`
+
+Formats the `Money` instance (or a raw numeric value) into a string representation based on the provided [formatting options](#formatting).
+
+```typescript
+const formattedMoney = formatter.format(money); // result for example: $1,234.567
+```
+
+##### `formatToParts(money: number | Money, formatOptions?: Partial<MoneyFormatterOptions>): MoneyFormat`
+
+Formats the `Money` instance (or a raw numeric value) into an object with separate formatted parts, like integer, fraction, and currency symbol, based on the provided [formatting options](#formatting).
+
+```typescript
+const formattedParts = formatter.formatToParts(money, { locale: "en-US" });
+
+/* result for example: {
+  currency: '$',
+  value: 1234.567,
+  integer: '1,234',
+  fraction: '.567',
+  formatted: '1,234.567',
+  display: '$1,234.567'
+}
+*/
+```
+
+### Formatting
+
+The `MoneyFormatter` class and `format` methods accepts several options to customize:
+
+- `locale` (string): The locale or country code, e.g. `'en-US'`, `'US'`.
+- `roundStrategy` (RoundStrategy): The rounding strategy (`UP`, `DOWN`, `NEAREST`).
+- `precision` (number): The number of decimal places to display.
+- `trailingZeroDisplay` (boolean | Record<string, boolean>): If `true`, remove `.00` suffix.
+- `preventGrouping` (boolean): If `true`, disables grouping separators for large numbers.
+- `templates` (TemplateMap): Custom templates for formatting money (e.g. `"{currency}{integer|[delimiter]}{fraction|[delimiter]|[precision]}"`).
+  - `currency`: Currency placeholder. e.g. `$`
+  - `integer`: Integer placeholder with delimiter. e.g. `1.200.300`
+  - `fraction`: Fraction placeholder with delimiter and precision. e.g. `,56`
+
 ### Usage
 
 #### Manipulating money
 
 ```typescript
 const money = new Money(1234.567);
-const formattedMoney = money.add(500).discount(50).round(2); // 867,28
+
+const formattedMoney = money.add(500).discount(50).round(2).format({ locale: "AZ" });
+```
+
+#### Custom formatter
+
+`custom-formatter.ts`
+
+```typescript
+import { MoneyFormatter } from "monefy";
+
+export const moneyFormatter = new MoneyFormatter({
+  locale: process.env.LOCATION, // or header, query, cookie, storage, config etc.
+  overridedSymbols: {
+    TR: "TL",
+    AZN: "TL",
+    "*": "$",
+  },
+  templates: {
+    "*": "{integer|.}{fraction|2|,} {currency}",
+  },
+  trailingZeroDisplay: true,
+});
+```
+
+`index.ts`
+
+```typescript
+import { MoneyFormat } from "@types";
+import { moneyFormatter } from "./custom-formatter";
+
+type Prices = {
+  originalPrice: number;
+  discountedPrice: number;
+};
+
+type MappedPrices = {
+  originalPrice: MoneyFormat;
+  discountedPrice: MoneyFormat;
+};
+
+const mapPrices = (price: Prices): MappedPrices => {
+  return {
+    originalPrice: moneyFormatter.formatToParts(price.originalPrice),
+    discountedPrice: moneyFormatter.formatToParts(price.discountedPrice),
+  };
+};
+
+const mappedPrices = mapPrices({
+  originalPrice: 167.434,
+  discountedPrice: 150.2,
+});
 ```
 
 ## Contributing
