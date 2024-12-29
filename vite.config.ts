@@ -16,11 +16,15 @@ export default defineConfig({
   build: {
     outDir: "dist",
     minify: "terser",
+    rollupOptions: {
+      output: {
+        preserveModules: true,
+      },
+    },
     lib: {
       entry: path.resolve(__dirname, "lib/index.ts"),
       name: "money",
-      fileName: (format, entryName) =>
-        format === "cjs" ? `${entryName}.cjs` : `${entryName}.js`,
+      fileName: (format, entryName) => (format === "cjs" ? `${entryName}.cjs` : `${entryName}.js`),
       formats: ["es", "cjs"],
     },
     sourcemap: true,
@@ -29,15 +33,11 @@ export default defineConfig({
 
   test: {
     globals: true,
-    include: ["lib/**/*.test.ts"],
+    include: ["tests/**"],
     coverage: {
       reporter: ["text", "html"],
       include: ["lib"],
-      exclude: [
-        "**/*.{spec,test}.ts",
-        "**/*.js",
-        "**/{types,enums}.ts",
-      ],
+      exclude: ["**/*.js", "**/{types,enums}.ts"],
       all: true,
       thresholds: {
         lines: 100,

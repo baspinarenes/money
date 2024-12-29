@@ -51,6 +51,7 @@
     "postversion": "echo \"Don't forget to push the tags and publish the version.\""
   },
   "devDependencies": {
+    "@types/big.js": "^6.2.2",
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "^2.1.8",
     "terser": "^5.37.0",
@@ -61,6 +62,8 @@
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.8"
   },
-  "dependencies": {},
+  "dependencies": {
+    "big.js": "^6.2.2"
+  },
   "peerDependencies": {}
 }
