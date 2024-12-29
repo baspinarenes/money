@@ -3,14 +3,18 @@ import { RoundStrategy } from "@enums";
 import { ceil, divide, equal, floor, minus, multiply, plus, pow, round } from "@utils";
 
 export class Money {
-  amount: number;
+  _amount: number;
 
   constructor(amount: number) {
     if (!Number.isFinite(amount)) {
       throw new Error(`${LOG_PREFIX} Invalid money amount: ${amount}`);
     }
 
-    this.amount = amount;
+    this._amount = amount;
+  }
+
+  get amount(): number {
+    return this._amount;
   }
 
   get value(): number {
@@ -96,6 +100,6 @@ export class Money {
   }
 }
 
-export function monetize(value: number) {
-  return new Money(value);
+export function monetize(amount: number) {
+  return new Money(amount);
 }
