@@ -26,6 +26,7 @@ pnpm install @enesbaspinar/money
 This package provides two classes. These are:
 
 - `Money`: A utility class for performing arithmetic operations on monetary values.
+- `MoneyFormatter`: A class for formatting monetary values with locale-specific currency formats.
 
 ### Money Class
 
@@ -136,7 +137,7 @@ const isEqual = money.equal(1234.567); // true
 Formats the `Money` instance into a string representation according to the provided [formatting options](#formatting).
 
 ```typescript
-const formattedMoney = money.format({ locale: "GB" }); // result for example: £1,234.567
+const formattedMoney = money.format({ locale: "GB" }); // £1,234.567
 ```
 
 `formatToParts(options: MoneyFormatterOptions): MoneyFormat`
@@ -198,7 +199,7 @@ const formatter = new MoneyFormatter({ locale: "tr-TR" });
 
 #### Static Method
 
-##### `create(options: MoneyFormatterOptions): MoneyFormatter`
+`create(options: MoneyFormatterOptions): MoneyFormatter`
 
 Creates and returns a new instance of `MoneyFormatter` with the given options.
 
@@ -208,15 +209,15 @@ const formatter = MoneyFormatter.create({ locale: "en-US" });
 
 #### Methods
 
-##### `format(money: number | Money, formatOptions?: Partial<MoneyFormatterOptions>): string`
+`format(money: number | Money, formatOptions?: MoneyFormatterOptions): string`
 
 Formats the `Money` instance (or a raw numeric value) into a string representation based on the provided [formatting options](#formatting).
 
 ```typescript
-const formattedMoney = formatter.format(money); // result for example: $1,234.567
+const formattedMoney = formatter.format(money); // $1,234.567
 ```
 
-##### `formatToParts(money: number | Money, formatOptions?: Partial<MoneyFormatterOptions>): MoneyFormat`
+`formatToParts(money: number | Money, formatOptions?: MoneyFormatterOptions): MoneyFormat`
 
 Formats the `Money` instance (or a raw numeric value) into an object with separate formatted parts, like integer, fraction, and currency symbol, based on the provided [formatting options](#formatting).
 
