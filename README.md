@@ -83,8 +83,6 @@ Adds the specified amount to current `Money` instance and returns `Money` instan
 const newMoney = money.add(50); // 1284.567
 ```
 
-<br/>
-
 `subtract(amount: number | Money): Money`
 
 Subtracts the specified amount to current `Money` instance and returns `Money` instance.
@@ -92,8 +90,6 @@ Subtracts the specified amount to current `Money` instance and returns `Money` i
 ```typescript
 const newMoney = money.subtract(50); // 1184.567
 ```
-
-<br/>
 
 `multiply(amount: number | Money): Money`
 
@@ -103,8 +99,6 @@ Multiplies the current `Money` instance by the specified amount and returns `Mon
 const newMoney = money.multiply(2); // 2469,134
 ```
 
-<br/>
-
 `divide(amount: number | Money): Money`
 
 Divides the current `Money` instance by the specified amount and returns `Money` instance.
@@ -112,12 +106,6 @@ Divides the current `Money` instance by the specified amount and returns `Money`
 ```typescript
 const newMoney = money.divide(2); // 617,2835
 ```
-
-Throws:
-
-- Throws an error if attempting to divide by zero.
-
-<br/>
 
 `round(decimals: number, strategy?: RoundStrategy): Money`
 
@@ -127,8 +115,6 @@ Rounds the current `Money` instance to the specified number of decimal places us
 const roundedMoney = money.round(1, RoundStrategy.DOWN); // 1234,5
 ```
 
-<br/>
-
 `discount(rate: number): Money`
 
 Applies a discount to the current `Money` instance based on the given rate (expressed as a percentage) and returns `Money` instance. The rate could be in 0-1 or 0-100 ranges.
@@ -136,8 +122,6 @@ Applies a discount to the current `Money` instance based on the given rate (expr
 ```typescript
 const discountedMoney = money.discount(20); // 987.6536
 ```
-
-<br/>
 
 `equal(amount: number | Money): boolean`
 
@@ -147,8 +131,6 @@ Compares the current `Money` instance to another amount or `Money` instance. Ret
 const isEqual = money.equal(1234.567); // true
 ```
 
-<br/>
-
 `valueOf(): number`
 
 Returns the amount of the `Money` instance.
@@ -157,8 +139,6 @@ Returns the amount of the `Money` instance.
 const rawValue = money.valueOf(); // 1234.567
 ```
 
-<br/>
-
 `toString(): string`
 
 Returns a string representation of the `Money` instance.
@@ -166,8 +146,6 @@ Returns a string representation of the `Money` instance.
 ```typescript
 const stringValue = money.toString(); // '1234.567'
 ```
-
-<br/>
 
 ### Usage
 
@@ -189,4 +167,4 @@ We welcome contributions. To get started:
 
 ## License
 
-PriceFormatter is licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE).
