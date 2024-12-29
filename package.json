@@ -41,6 +41,10 @@
     "type": "git",
     "url": "git://github.com/baspinarenes/money.git"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsc -b && vite build",
     "build:watch": "vite build --watch",

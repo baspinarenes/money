@@ -16,11 +16,6 @@ export default defineConfig({
   build: {
     outDir: "dist",
     minify: "terser",
-    rollupOptions: {
-      output: {
-        preserveModules: true,
-      },
-    },
     lib: {
       entry: path.resolve(__dirname, "lib/index.ts"),
       name: "money",
