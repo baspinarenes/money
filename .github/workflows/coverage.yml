@@ -1,0 +1,30 @@
+name: update-coverage-in-readme
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-coverage-in-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn install --frozen-lockfile
+      - run: yarn coverage | tee ./coverage.txt
+      - name: Jest Coverage Comment
+        id: coverageComment
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          hide-comment: true
+          coverage-path: ./coverage.txt
+      - name: Create the badge
+        if: github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 2f738df7e195409cacd5c94b0f07d8bb
+          filename: test.json
+          label: coverage
+          message: ${{ steps.coverageComment.outputs.coverage }}%
+          color: ${{ steps.coverageComment.outputs.color }}
+          namedLogo: vitest
