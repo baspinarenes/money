@@ -258,4 +258,188 @@ describe("MoneyFormatter tests", () => {
       expect(formatterMixed.format(1234)).toBe("$1,234.00");
     });
   });
+
+  describe("Format method tests", () => {
+    test("should format number", () => {
+      const formatter = MoneyFormatter.create({ locale: "en-US" });
+
+      expect(formatter.format(1234.56)).toBe("$1,234.56");
+    });
+
+    test("should format Money object", () => {
+      const formatter = MoneyFormatter.create({ locale: "en-US" });
+      const money = new Money(1234.56);
+
+      expect(formatter.format(money)).toBe("$1,234.56");
+    });
+
+    test("should format Money object", () => {
+      const formatter = MoneyFormatter.create({
+        locale: "TR",
+        templates: {
+          "*": "Fiyat: {integer|.} {fraction|,|2} {currency} ",
+        },
+        overridedSymbols: {
+          TR: "TL",
+        },
+      });
+      const money = new Money(1234.56);
+
+      expect(formatter.format(money)).toBe("Fiyat: 1.234 ,56 TL ");
+    });
+
+    test("should format Money object with overrided symbols", () => {
+      const formatter = MoneyFormatter.create({
+        locale: "tr-TR",
+        templates: {
+          TR: "{integer|.}{fraction|,|2} {currency}",
+        },
+        overridedSymbols: {
+          TR: "TL",
+        },
+      });
+      const money = new Money(1234.56);
+
+      expect(formatter.format(money)).toBe("1.234,56 TL");
+    });
+
+    test("should format Money with overrided smybols for all locales", () => {
+      const formatter = MoneyFormatter.create({
+        locale: "tr-TR",
+        templates: {
+          "tr-TR": "{integer|.}{fraction|,|2} {currency}",
+        },
+        overridedSymbols: {
+          "*": "$",
+        },
+      });
+      const money = new Money(1234.56);
+
+      expect(formatter.format(money)).toBe("1.234,56 $");
+    });
+  });
+
+  describe("FormatToParts method tests", () => {
+    test("should format to parts", () => {
+      const formatter = MoneyFormatter.create({ locale: "en-US" });
+      const parts = formatter.formatToParts(1234.56);
+
+      expect(parts).toEqual({
+        currency: "$",
+        value: 1234.56,
+        integer: "1,234",
+        fraction: ".56",
+        formatted: "1,234.56",
+        display: "$1,234.56",
+      });
+    });
+
+    test("should format to parts", () => {
+      const formatter = MoneyFormatter.create({ locale: "en-US" });
+      const parts = formatter.formatToParts(100);
+
+      expect(parts).toEqual({
+        currency: "$",
+        value: 100,
+        integer: "100",
+        fraction: ".00",
+        formatted: "100.00",
+        display: "$100.00",
+      });
+    });
+
+    test("should format to parts with trailingZeroDisplay", () => {
+      const formatter = MoneyFormatter.create({
+        locale: "en-US",
+        trailingZeroDisplay: true,
+      });
+      const parts = formatter.formatToParts(100);
+
+      expect(parts).toEqual({
+        currency: "$",
+        value: 100,
+        integer: "100",
+        fraction: "",
+        formatted: "100",
+        display: "$100",
+      });
+    });
+
+    test("should format to parts with rounding", () => {
+      const formatter = MoneyFormatter.create({
+        locale: "en-US",
+        roundStrategy: "down",
+        precision: 1,
+      });
+
+      const parts = formatter.formatToParts(new Money(1234.567));
+
+      expect(parts).toEqual({
+        currency: "$",
+        value: 1234.567,
+        integer: "1,234",
+        fraction: ".5",
+        formatted: "1,234.5",
+        display: "$1,234.5",
+      });
+    });
+
+    test("should format to parts with custom template", () => {
+      const customOptions: MoneyFormatterOptions = {
+        locale: "tr-TR",
+        templates: {
+          "en-US": "{integer|,}{fraction|.|2} {currency}",
+          "tr-TR": "{integer|.}{fraction|,|2} {currency}",
+        },
+      };
+      const formatter = MoneyFormatter.create(customOptions);
+      const parts = formatter.formatToParts(new Money(1234.56));
+      expect(parts).toEqual({
+        currency: "₺",
+        value: 1234.56,
+        integer: "1.234",
+        fraction: ",56",
+        formatted: "1.234,56",
+        display: "1.234,56 ₺",
+      });
+    });
+
+    test("should format to parts with currency override", () => {
+      const overrideOptions: MoneyFormatterOptions = {
+        locale: "tr-TR",
+        overridedSymbols: {
+          "tr-TR": "TL",
+        },
+      };
+      const formatter = MoneyFormatter.create(overrideOptions);
+      const parts = formatter.formatToParts(new Money(1234.56));
+      expect(parts.currency).toBe("TL");
+      expect(parts.display).toBe("TL1.234,56");
+    });
+
+    test("should format to parts without grouping when preventGrouping is false", () => {
+      const overrideOptions: MoneyFormatterOptions = {
+        locale: "tr-TR",
+        overridedSymbols: {
+          "tr-TR": "TL",
+        },
+        preventGrouping: true,
+      };
+      const formatter = MoneyFormatter.create(overrideOptions);
+      const parts = formatter.formatToParts(new Money(1234.56));
+      expect(parts.currency).toBe("TL");
+      expect(parts.display).toBe("TL1234,56");
+    });
+
+    test("should format to parts with trailingZeroDisplay stripIfInteger", () => {
+      const optionsWithTrailingZeroDisplay: MoneyFormatterOptions = {
+        locale: "en-US",
+        trailingZeroDisplay: true,
+      };
+      const formatter = MoneyFormatter.create(optionsWithTrailingZeroDisplay);
+      expect(formatter.format(1234)).toBe("$1,234");
+      expect(formatter.format(1234.5)).toBe("$1,234.5");
+      expect(formatter.format(1234.5)).toBe("$1,234.5");
+    });
+  });
 });

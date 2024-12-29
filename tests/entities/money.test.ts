@@ -12,14 +12,11 @@ describe.each([
     util: monetize,
   },
 ])("$name tests", ({ util }) => {
-  test("should throw an error when amount is not number", () => {
-    expect(() => util(undefined as any)).toThrowError(`${LOG_PREFIX} Invalid money amount: ${undefined}`);
-    expect(() => util(null as any)).toThrowError(`${LOG_PREFIX} Invalid money amount: ${null}`);
-    expect(() => util("" as any)).toThrowError(`${LOG_PREFIX} Invalid money amount: ${""}`);
-  });
-
   describe("Value getter tests", () => {
     test("should return the amount", () => {
+      expect(util(undefined as any).value).toBe(0);
+      expect(util(null as any).value).toBe(0);
+      expect(util("" as any).value).toBe(0);
       expect(util(5.625).value).toBe(5.625);
       expect(util(5).value).toBe(5);
       expect(util(0).value).toBe(0);

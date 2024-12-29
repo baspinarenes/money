@@ -1,6 +1,8 @@
 import { LOG_PREFIX } from "@constants";
 import { RoundStrategy } from "@enums";
+import { MoneyFormat, MoneyFormatterOptions } from "@types";
 import { ceil, divide, equal, floor, minus, multiply, plus, pow, round } from "@utils";
+import { MoneyFormatter } from "./money-formatter";
 
 export class Money {
   _amount: number;
@@ -96,6 +98,14 @@ export class Money {
 
   equal(amount: number | Money): boolean {
     return equal(this.amount, this.getValue(amount));
+  }
+
+  format(options: MoneyFormatterOptions): string {
+    return MoneyFormatter.create(options).format(this);
+  }
+
+  formatToParts(options: MoneyFormatterOptions): MoneyFormat {
+    return MoneyFormatter.create(options).formatToParts(this);
   }
 
   valueOf(): number {
