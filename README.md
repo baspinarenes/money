@@ -267,14 +267,12 @@ const formattedMoney = money.add(500).discount(50).round(2).format({ locale: "AZ
 import { MoneyFormatter } from "monefy";
 
 export const moneyFormatter = new MoneyFormatter({
-  locale: process.env.LOCATION, // or header, query, cookie, storage, config etc.
+  locale: "tr-TR", // or header, query, cookie, storage, config etc.
   overridedSymbols: {
     TR: "TL",
-    AZN: "TL",
-    "*": "$",
   },
   templates: {
-    "*": "{integer|.}{fraction|2|,} {currency}",
+    "*": "{integer|.}{fraction|,|2} {currency}",
   },
   trailingZeroDisplay: true,
 });
@@ -287,26 +285,60 @@ import { MoneyFormat } from "@types";
 import { moneyFormatter } from "./custom-formatter";
 
 type Prices = {
+  azPrice: number;
   originalPrice: number;
   discountedPrice: number;
 };
 
 type MappedPrices = {
+  azPrice: MoneyFormat;
   originalPrice: MoneyFormat;
   discountedPrice: MoneyFormat;
 };
 
 const mapPrices = (price: Prices): MappedPrices => {
   return {
+    azPrice: moneyFormatter.formatToParts(price.azPrice, { locale: "AZ" }),
     originalPrice: moneyFormatter.formatToParts(price.originalPrice),
     discountedPrice: moneyFormatter.formatToParts(price.discountedPrice),
   };
 };
 
 const mappedPrices = mapPrices({
+  azPrice: 20.5,
   originalPrice: 167.434,
   discountedPrice: 150.2,
 });
+
+console.log(mappedPrices);
+
+/* result:
+{
+  azPrice: {
+    currency: '₼',
+    value: 20.5,
+    integer: '20',
+    fraction: ',5',
+    formatted: '20,5',
+    display: '20,5 ₼'
+  },
+  originalPrice: {
+    currency: 'TL',
+    value: 167.434,
+    integer: '167',
+    fraction: ',43',
+    formatted: '167,43',
+    display: '167,43 TL'
+  },
+  discountedPrice: {
+    currency: 'TL',
+    value: 150.2,
+    integer: '150',
+    fraction: ',2',
+    formatted: '150,2',
+    display: '150,2 TL'
+  }
+*/
 ```
 
 ## Contributing
