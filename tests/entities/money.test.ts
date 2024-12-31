@@ -1,4 +1,4 @@
-import { monetize, Money } from "../../lib";
+import { monetize, Money, MoneyFormatter } from "../../lib";
 import { LOG_PREFIX } from "@constants";
 import { RoundStrategy } from "@enums";
 
@@ -127,6 +127,38 @@ describe.each([
     test("should return false for unequal money", () => {
       expect(util(0.1).equal(0.2)).toBe(false);
       expect(util(0.1).equal(util(0.2))).toBe(false);
+    });
+  });
+
+  describe("Format method tests", () => {
+    test("should create formatter and call format method", () => {
+      const mockFormat = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        format: mockFormat,
+      } as any);
+
+      const options = { locale: "TR" };
+      const price = 5.625;
+      util(price).format(options);
+
+      expect(MoneyFormatter.create).toBeCalledWith(options);
+      expect(mockFormat).toBeCalledWith(new Money(price));
+    });
+  });
+
+  describe("FormatToParts method tests", () => {
+    test("should create formatter and call formatToParts method", () => {
+      const mockFormatToParts = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        formatToParts: mockFormatToParts,
+      } as any);
+
+      const options = { locale: "TR" };
+      const price = 5.625;
+      util(price).formatToParts(options);
+
+      expect(MoneyFormatter.create).toBeCalledWith(options);
+      expect(mockFormatToParts).toBeCalledWith(new Money(price));
     });
   });
 
