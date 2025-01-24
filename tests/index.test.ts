@@ -1,8 +1,8 @@
 import * as index from "../lib";
-import { Money, monetize, MoneyFormatter } from "@entities";
+import { Money, monetize, MoneyFormatter, createMoney } from "@entities";
 import { RoundStrategy } from "@enums";
 
-const allowedExports = { Money, monetize, MoneyFormatter, RoundStrategy };
+const allowedExports = { Money, monetize, MoneyFormatter, RoundStrategy, createMoney };
 
 describe("Index tests", () => {
   it("should only export allowed entities", () => {
