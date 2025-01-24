@@ -3,6 +3,7 @@ import { RoundStrategy } from "@enums";
 import { MoneyFormat, MoneyFormatterOptions } from "@types";
 import { ceil, divide, equal, floor, minus, multiply, plus, pow, round } from "@utils";
 import { MoneyFormatter } from "./money-formatter";
+import { ConfigStore } from "../config/config-store";
 
 export class Money {
   _amount: number;
@@ -100,12 +101,16 @@ export class Money {
     return equal(this.amount, this.getValue(amount));
   }
 
-  format(options: MoneyFormatterOptions): string {
-    return MoneyFormatter.create(options).format(this);
+  format(options?: MoneyFormatterOptions): string {
+    const globalConfig = ConfigStore.getInstance().getConfig();
+    const finalOptions = options ? { ...globalConfig, ...options } : globalConfig;
+    return MoneyFormatter.create(finalOptions).format(this);
   }
 
-  formatToParts(options: MoneyFormatterOptions): MoneyFormat {
-    return MoneyFormatter.create(options).formatToParts(this);
+  formatToParts(options?: MoneyFormatterOptions): MoneyFormat {
+    const globalConfig = ConfigStore.getInstance().getConfig();
+    const finalOptions = options ? { ...globalConfig, ...options } : globalConfig;
+    return MoneyFormatter.create(finalOptions).formatToParts(this);
   }
 
   valueOf(): number {
