@@ -22,6 +22,30 @@ pnpm install @enesbaspinar/money
 ```
 
 ## Documentation
+### Easy Start
+
+You can configure the formatting behavior using the `createMoney` function.
+
+```typescript
+import { createMoney } from '@enesbaspinar/money';
+
+const money = createMoney({
+  locale: 'en-US'
+});
+
+// Uses global config
+console.log(money(1234.567).format()); // 1.234,567 $
+
+// Override global config for this specific call
+console.log(money(1234.567).format({ 
+  locale: 'de-DE',
+  templates: {
+    '*': '{currency} {integer|.}{fraction|,|2}'
+  }
+})); // € 1.234,56
+```
+
+The configuration object accepts all [formatting options](#formatting) listed below.
 
 This package provides two classes. These are:
 
@@ -264,7 +288,7 @@ const formattedMoney = money.add(500).discount(50).round(2).format({ locale: "AZ
 `custom-formatter.ts`
 
 ```typescript
-import { MoneyFormatter } from "monefy";
+import { MoneyFormatter } from "@enesbaspinar/money";
 
 export const moneyFormatter = new MoneyFormatter({
   locale: "tr-TR", // or header, query, cookie, storage, config etc.

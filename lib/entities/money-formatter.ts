@@ -29,7 +29,7 @@ export class MoneyFormatter {
       trailingZeroDisplay: options?.trailingZeroDisplay || {},
       templates: this.parseTemplates(options?.templates),
       precision: options?.precision,
-      roundStrategy: (options.roundStrategy as RoundStrategy) || RoundStrategy.NEAREST,
+      roundStrategy: (options.roundStrategy as RoundStrategy) || RoundStrategy.DOWN,
       preventGrouping: options?.preventGrouping || false,
     };
   }

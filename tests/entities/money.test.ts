@@ -1,6 +1,7 @@
 import { monetize, Money, MoneyFormatter } from "../../lib";
 import { LOG_PREFIX } from "@constants";
 import { RoundStrategy } from "@enums";
+import { ConfigStore } from "../../lib/config/config-store";
 
 describe.each([
   {
@@ -12,6 +13,11 @@ describe.each([
     util: monetize,
   },
 ])("$name tests", ({ util }) => {
+  beforeEach(() => {
+    (ConfigStore as any).instance = undefined;
+    vi.clearAllMocks();
+  });
+
   describe("Value getter tests", () => {
     test("should return the amount", () => {
       expect(util(undefined as any).value).toBe(0);
@@ -144,6 +150,37 @@ describe.each([
       expect(MoneyFormatter.create).toBeCalledWith(options);
       expect(mockFormat).toBeCalledWith(new Money(price));
     });
+
+    test("should merge local options with global config", () => {
+      const mockFormat = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        format: mockFormat,
+      } as any);
+
+      ConfigStore.getInstance().setConfig({ locale: "en-US", precision: 2 });
+      const localOptions = { locale: "tr-TR" };
+      const price = 5.625;
+      util(price).format(localOptions);
+
+      expect(MoneyFormatter.create).toBeCalledWith({
+        locale: "tr-TR",
+        precision: 2
+      });
+    });
+
+    test("should use global config when no local options provided", () => {
+      const mockFormat = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        format: mockFormat,
+      } as any);
+
+      const globalConfig = { locale: "en-US", precision: 2 };
+      ConfigStore.getInstance().setConfig(globalConfig);
+      const price = 5.625;
+      util(price).format();
+
+      expect(MoneyFormatter.create).toBeCalledWith(globalConfig);
+    });
   });
 
   describe("FormatToParts method tests", () => {
@@ -159,6 +196,37 @@ describe.each([
 
       expect(MoneyFormatter.create).toBeCalledWith(options);
       expect(mockFormatToParts).toBeCalledWith(new Money(price));
+    });
+
+    test("should merge local options with global config", () => {
+      const mockFormatToParts = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        formatToParts: mockFormatToParts,
+      } as any);
+
+      ConfigStore.getInstance().setConfig({ locale: "en-US", precision: 2 });
+      const localOptions = { locale: "tr-TR" };
+      const price = 5.625;
+      util(price).formatToParts(localOptions);
+
+      expect(MoneyFormatter.create).toBeCalledWith({
+        locale: "tr-TR",
+        precision: 2
+      });
+    });
+
+    test("should use global config when no local options provided", () => {
+      const mockFormatToParts = vi.fn();
+      vi.spyOn(MoneyFormatter, "create").mockReturnValue({
+        formatToParts: mockFormatToParts,
+      } as any);
+
+      const globalConfig = { locale: "en-US", precision: 2 };
+      ConfigStore.getInstance().setConfig(globalConfig);
+      const price = 5.625;
+      util(price).formatToParts();
+
+      expect(MoneyFormatter.create).toBeCalledWith(globalConfig);
     });
   });
 
