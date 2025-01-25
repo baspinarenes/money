@@ -6,11 +6,7 @@ export class ConfigStore {
 
   private constructor() {
     this.config = {
-      locale: "en-US",
-      templates: {
-        "*": "{integer|,}{fraction|.|2} {currency}",
-      },
-      trailingZeroDisplay: false,
+      locale: "en-US"
     };
   }
 
