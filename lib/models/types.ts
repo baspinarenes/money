@@ -1,18 +1,25 @@
 import { RoundStrategy } from "@enums";
 
-export type MoneyFormatterOptions = {
+export type MoneyFormatterConfig = {
   locale: string;
   templates?: Record<string, string>;
   overridedSymbols?: Record<string, string>;
-  trailingZeroDisplay?: boolean | Record<string, boolean>;
-  roundStrategy?: `${RoundStrategy}`;
-  precision?: number;
+  trimDoubleZeros?: boolean | Record<string, boolean>;
+  trimPaddingZeros?: boolean | Record<string, boolean>;
+  precision?: {
+    digit: number;
+    strategy?: `${RoundStrategy}`;
+  };
   preventGrouping?: boolean;
 };
 
 export type TemplateMap = Record<string, TemplatePart[]>;
 
-export type TemplatePart = CurrencyTemplatePart | CustomTemplatePart | IntegerTemplatePart | FractionTemplatePart;
+export type TemplatePart =
+  | CurrencyTemplatePart
+  | CustomTemplatePart
+  | IntegerTemplatePart
+  | FractionTemplatePart;
 
 export type CurrencyTemplatePart = {
   type: "currency";
@@ -31,7 +38,6 @@ export type IntegerTemplatePart = {
 export type FractionTemplatePart = {
   type: "fraction";
   delimiter: string;
-  precision?: number;
 };
 
 export type MoneyFormat = {

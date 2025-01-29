@@ -1,3 +1,3 @@
 export * from "./money";
 export * from "./money-formatter";
-export * from "./create-money"
+export * from "./initializer";

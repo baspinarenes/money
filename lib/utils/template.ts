@@ -9,10 +9,9 @@ export const templateHandlers: Record<string, (rest: string[]) => TemplatePart> 
     type: "integer",
     delimiter,
   }),
-  fraction: ([delimiter = ",", precision = 2]) => ({
+  fraction: ([delimiter = ","]) => ({
     type: "fraction",
     delimiter,
-    precision: Number(precision),
   }),
   currency: () => ({ type: "currency" }),
 };
@@ -23,7 +22,7 @@ export const intlPartHandlers: Record<string, (value: string) => TemplatePart> =
   currency: () => ({ type: "currency" }),
 };
 
-export const formatIntegerWithDelimiter = (x: number, delimiter: string) => {
+export const formatWithGrouping = (x: number, delimiter: string) => {
   const integerParts = String(x).match(/\d{1,3}(?=(\d{3})*$)|\d{1,3}$/g)!;
   return integerParts.join(delimiter);
 };

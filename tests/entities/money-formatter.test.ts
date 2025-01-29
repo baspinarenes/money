@@ -1,6 +1,6 @@
 import { MoneyFormatter } from "@entities";
 import { Money } from "../../lib/entities/money";
-import { MoneyFormatterOptions } from "@types";
+import { MoneyFormatterConfig } from "@types";
 import { LOG_PREFIX } from "@constants";
 
 describe("MoneyFormatter tests", () => {
@@ -123,10 +123,10 @@ describe("MoneyFormatter tests", () => {
       });
     });
 
-    test("should format to parts with trailingZeroDisplay", () => {
+    test("should format to parts with trimDoubleZeros", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: true,
+        trimDoubleZeros: true,
       });
       const parts = formatter.formatToParts(100);
 
@@ -143,8 +143,7 @@ describe("MoneyFormatter tests", () => {
     test("should format to parts with rounding", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        roundStrategy: "down",
-        precision: 1,
+        precision: {digit: 1, strategy: "down" },
       });
 
       const parts = formatter.formatToParts(new Money(1234.567));
@@ -160,7 +159,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with custom template", () => {
-      const customOptions: MoneyFormatterOptions = {
+      const customOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         templates: {
           "en-US": "{integer|,}{fraction|.|2} {currency}",
@@ -180,7 +179,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with currency override", () => {
-      const overrideOptions: MoneyFormatterOptions = {
+      const overrideOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         overridedSymbols: {
           "tr-TR": "TL",
@@ -193,7 +192,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts without grouping when preventGrouping is false", () => {
-      const overrideOptions: MoneyFormatterOptions = {
+      const overrideOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         overridedSymbols: {
           "tr-TR": "TL",
@@ -206,10 +205,10 @@ describe("MoneyFormatter tests", () => {
       expect(parts.display).toBe("TL1234,56");
     });
 
-    test("should format to parts with trailingZeroDisplay stripIfInteger", () => {
-      const optionsWithTrailingZeroDisplay: MoneyFormatterOptions = {
+    test("should format to parts with trimDoubleZeros stripIfInteger", () => {
+      const optionsWithTrailingZeroDisplay: MoneyFormatterConfig = {
         locale: "en-US",
-        trailingZeroDisplay: true,
+        trimDoubleZeros: true,
       };
       const formatter = MoneyFormatter.create(optionsWithTrailingZeroDisplay);
       expect(formatter.format(1234)).toBe("$1,234");
@@ -222,38 +221,38 @@ describe("MoneyFormatter tests", () => {
     test("should handle trailingZeroDisplay as boolean", () => {
       const formatterTrue = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: true,
+        trimDoubleZeros: true,
       });
       expect(formatterTrue.format(1234)).toBe("$1,234");
       const formatterFalse = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: false,
+        trimDoubleZeros: false,
       });
       expect(formatterFalse.format(1234)).toBe("$1,234.00");
     });
 
-    test("should handle trailingZeroDisplay as object", () => {
+    test("should handle trimDoubleZeros as object", () => {
       const formatterLocale = MoneyFormatter.create({
         locale: "en-GB",
-        trailingZeroDisplay: { "en-GB": true },
+        trimDoubleZeros: { "en-GB": true },
       });
       expect(formatterLocale.format(1234)).toBe("£1,234");
 
       const formatterCountryCode = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: { US: true },
+        trimDoubleZeros: { US: true },
       });
       expect(formatterCountryCode.format(1234)).toBe("$1,234");
 
       const formatterDefault = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: { "*": true },
+        trimDoubleZeros: { "*": true },
       });
       expect(formatterDefault.format(1234)).toBe("$1,234");
 
       const formatterMixed = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: { "en-US": false, "*": true },
+        trimDoubleZeros: { "en-US": false, "*": true },
       });
       expect(formatterMixed.format(1234)).toBe("$1,234.00");
     });
@@ -348,10 +347,10 @@ describe("MoneyFormatter tests", () => {
       });
     });
 
-    test("should format to parts with trailingZeroDisplay", () => {
+    test("should format to parts with trimDoubleZeros", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        trailingZeroDisplay: true,
+        trimDoubleZeros: true,
       });
       const parts = formatter.formatToParts(100);
 
@@ -368,8 +367,7 @@ describe("MoneyFormatter tests", () => {
     test("should format to parts with rounding", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        roundStrategy: "down",
-        precision: 1,
+        precision: {digit: 1, strategy: "down" },
       });
 
       const parts = formatter.formatToParts(new Money(1234.567));
@@ -385,7 +383,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with custom template", () => {
-      const customOptions: MoneyFormatterOptions = {
+      const customOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         templates: {
           "en-US": "{integer|,}{fraction|.|2} {currency}",
@@ -405,7 +403,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with currency override", () => {
-      const overrideOptions: MoneyFormatterOptions = {
+      const overrideOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         overridedSymbols: {
           "tr-TR": "TL",
@@ -418,7 +416,7 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts without grouping when preventGrouping is false", () => {
-      const overrideOptions: MoneyFormatterOptions = {
+      const overrideOptions: MoneyFormatterConfig = {
         locale: "tr-TR",
         overridedSymbols: {
           "tr-TR": "TL",
@@ -431,10 +429,10 @@ describe("MoneyFormatter tests", () => {
       expect(parts.display).toBe("TL1234,56");
     });
 
-    test("should format to parts with trailingZeroDisplay stripIfInteger", () => {
-      const optionsWithTrailingZeroDisplay: MoneyFormatterOptions = {
+    test("should format to parts with trimDoubleZeros stripIfInteger", () => {
+      const optionsWithTrailingZeroDisplay: MoneyFormatterConfig = {
         locale: "en-US",
-        trailingZeroDisplay: true,
+        trimDoubleZeros: true,
       };
       const formatter = MoneyFormatter.create(optionsWithTrailingZeroDisplay);
       expect(formatter.format(1234)).toBe("$1,234");

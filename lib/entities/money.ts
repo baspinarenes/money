@@ -1,19 +1,16 @@
 import { LOG_PREFIX } from "@constants";
 import { RoundStrategy } from "@enums";
-import { MoneyFormat, MoneyFormatterOptions } from "@types";
+import { MoneyFormat, MoneyFormatterConfig } from "@types";
 import { ceil, divide, equal, floor, minus, multiply, plus, pow, round } from "@utils";
 import { MoneyFormatter } from "./money-formatter";
-import { ConfigStore } from "../config/config-store";
 
 export class Money {
-  _amount: number;
+  private readonly _amount: number;
+  private readonly _config: MoneyFormatterConfig;
 
-  constructor(amount: number) {
-    if (!Number.isFinite(amount)) {
-      this._amount = 0;
-    } else {
-      this._amount = amount;
-    }
+  constructor(amount: number, config?: MoneyFormatterConfig) {
+    this._amount = Number.isFinite(amount) ? amount : 0;
+    this._config = config || ({} as MoneyFormatterConfig);
   }
 
   get amount(): number {
@@ -21,16 +18,16 @@ export class Money {
   }
 
   get value(): number {
-    return this.amount;
+    return this._amount;
   }
 
   get integer(): number {
-    return floor(this.amount, 0);
+    return floor(this.value, 0).toNumber();
   }
 
   get fraction(): number {
     const { value } = this.handleFraction();
-    return value;
+    return value.toNumber();
   }
 
   get formattedFraction(): string {
@@ -38,28 +35,36 @@ export class Money {
     return formatted;
   }
 
-  private handleFraction() {
-    const fractionPart = minus(this.amount, this.integer);
-    const fractionString = fractionPart.toString();
+  static create(amount: number) {
+    return new Money(amount);
+  }
+
+  protected handleFraction() {
+    const fractionPart = minus(this.value, this.integer);
+    const fractionString = fractionPart.toFixed();
     const decimalPart = fractionString.substring(fractionString.indexOf(".") + 1);
     const precision = decimalPart.length;
 
     return {
-      value: multiply(fractionPart, pow(10, precision)),
+      value: multiply(fractionPart.toNumber(), pow(10, precision).toNumber()),
       formatted: decimalPart,
     };
   }
 
+  protected getValue(money: number | Money): number {
+    return money instanceof Money ? money.value : money;
+  }
+
   add(amount: number | Money): Money {
-    return new Money(plus(this.amount, this.getValue(amount)));
+    return new Money(plus(this.value, this.getValue(amount)).toNumber(), this._config);
   }
 
   subtract(amount: number | Money): Money {
-    return new Money(minus(this.amount, this.getValue(amount)));
+    return new Money(minus(this.value, this.getValue(amount)).toNumber(), this._config);
   }
 
   multiply(amount: number | Money): Money {
-    return new Money(multiply(this.amount, this.getValue(amount)));
+    return new Money(multiply(this.value, this.getValue(amount)).toNumber(), this._config);
   }
 
   divide(amount: number | Money): Money {
@@ -67,7 +72,7 @@ export class Money {
       throw new Error(`${LOG_PREFIX} Cannot divide by zero.`);
     }
 
-    return new Money(divide(this.amount, this.getValue(amount)));
+    return new Money(divide(this.value, this.getValue(amount)).toNumber(), this._config);
   }
 
   round(decimals: number, strategy?: `${RoundStrategy}`): Money {
@@ -75,18 +80,18 @@ export class Money {
 
     switch (strategy) {
       case RoundStrategy.UP:
-        roundedValue = ceil(this.amount, decimals);
+        roundedValue = ceil(this.value, decimals).toNumber();
         break;
       case RoundStrategy.DOWN:
-        roundedValue = floor(this.amount, decimals);
+        roundedValue = floor(this.value, decimals).toNumber();
         break;
       case RoundStrategy.NEAREST:
       default:
-        roundedValue = round(this.amount, decimals);
+        roundedValue = round(this.value, decimals).toNumber();
         break;
     }
 
-    return new Money(roundedValue);
+    return new Money(roundedValue, this._config);
   }
 
   discount(rate: number): Money {
@@ -98,19 +103,15 @@ export class Money {
   }
 
   equal(amount: number | Money): boolean {
-    return equal(this.amount, this.getValue(amount));
+    return equal(this.value, this.getValue(amount));
   }
 
-  format(options?: MoneyFormatterOptions): string {
-    const globalConfig = ConfigStore.getInstance().getConfig();
-    const finalOptions = options ? { ...globalConfig, ...options } : globalConfig;
-    return MoneyFormatter.create(finalOptions).format(this);
+  format(config: Partial<MoneyFormatterConfig> = {}): string {
+    return MoneyFormatter.create({ ...this._config, ...config }).format(this);
   }
 
-  formatToParts(options?: MoneyFormatterOptions): MoneyFormat {
-    const globalConfig = ConfigStore.getInstance().getConfig();
-    const finalOptions = options ? { ...globalConfig, ...options } : globalConfig;
-    return MoneyFormatter.create(finalOptions).formatToParts(this);
+  formatToParts(config: Partial<MoneyFormatterConfig> = {}): MoneyFormat {
+    return MoneyFormatter.create({ ...this._config, ...config }).formatToParts(this);
   }
 
   valueOf(): number {
@@ -120,14 +121,4 @@ export class Money {
   toString(): string {
     return String(this.amount);
   }
-
-  // Helpers
-
-  private getValue(money: number | Money): number {
-    return money instanceof Money ? money.amount : money;
-  }
-}
-
-export function monetize(amount: number) {
-  return new Money(amount);
 }

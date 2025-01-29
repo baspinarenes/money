@@ -1,74 +1,89 @@
 import { LOG_PREFIX, TEMPLATE_OPTIONS_DELIMETER, TEMPLATE_PARSER_REGEX } from "@constants";
-import type { MoneyFormatterOptions, MoneyFormat, TemplateMap, TemplatePart } from "@types";
-import { formatIntegerWithDelimiter, intlPartHandlers, isValidLocale, templateHandlers } from "@utils";
+import type { MoneyFormatterConfig, MoneyFormat, TemplateMap, TemplatePart } from "@types";
+import { formatWithGrouping, intlPartHandlers, isValidLocale, templateHandlers } from "@utils";
 import { Money } from "./money";
-import { RoundStrategy } from "@enums";
 import countryToCurrency, { Countries } from "country-to-currency";
+import { RoundStrategy } from "@enums";
 
 export class MoneyFormatter {
-  private options: {
+  private readonly config: {
     locale: string;
-    templates: TemplateMap;
+    templates: Record<string, string>;
     overridedSymbols: Record<string, string>;
-    trailingZeroDisplay: boolean | Record<string, boolean>;
-    roundStrategy: RoundStrategy;
-    precision?: number;
-    preventGrouping?: boolean;
+    trimDoubleZeros: boolean | Record<string, boolean>;
+    trimPaddingZeros: boolean | Record<string, boolean>;
+    preventGrouping: boolean;
+    precision?: {
+      digit: number;
+      strategy?: `${RoundStrategy}`;
+    };
   };
+  private readonly parsedTemplates: TemplateMap;
 
-  constructor(options: MoneyFormatterOptions) {
-    const locale = options.locale;
+  constructor(config: MoneyFormatterConfig) {
+    const { locale } = config || {};
 
     if (!locale || !isValidLocale(locale)) {
       throw new Error(`${LOG_PREFIX} Invalid locale: ${locale}`);
     }
 
-    this.options = {
+    this.config = {
       locale,
-      overridedSymbols: options?.overridedSymbols || {},
-      trailingZeroDisplay: options?.trailingZeroDisplay || {},
-      templates: this.parseTemplates(options?.templates),
-      precision: options?.precision,
-      roundStrategy: (options.roundStrategy as RoundStrategy) || RoundStrategy.DOWN,
-      preventGrouping: options?.preventGrouping || false,
+      overridedSymbols: config?.overridedSymbols || {},
+      trimDoubleZeros: config?.trimDoubleZeros || false,
+      trimPaddingZeros: config?.trimPaddingZeros || false,
+      templates: config?.templates || {},
+      precision: config?.precision,
+      preventGrouping: config?.preventGrouping || false,
     };
+
+    this.parsedTemplates = this.parseTemplates(config?.templates);
   }
 
-  static create(options: MoneyFormatterOptions) {
-    return new MoneyFormatter(options);
+  static create(config: MoneyFormatterConfig) {
+    return new MoneyFormatter(config);
   }
 
-  formatToParts(_money: number | Money, formatOptions?: Partial<typeof this.options>): MoneyFormat {
-    let money = _money instanceof Money ? _money : new Money(_money);
+  formatToParts(_money: number | Money): MoneyFormat {
+    let money = _money instanceof Money ? _money : new Money(_money, this.config);
 
-    const options = { ...this.options, ...formatOptions };
-
-    const fractionPart = this.getTemplate(options).find((p) => p.type === "fraction")!;
-    const integerPart = this.getTemplate(options).find((p) => p.type === "integer")!;
+    const fractionPart = this.getTemplate().find((p) => p.type === "fraction")!;
+    const integerPart = this.getTemplate().find((p) => p.type === "integer")!;
 
     let manipulatedMoney = money;
 
-    if (fractionPart.precision || options.precision) {
-      manipulatedMoney = money.round((fractionPart.precision || options.precision)!, options.roundStrategy);
+    if (this.config.precision) {
+      manipulatedMoney = money.round(
+        this.config.precision.digit,
+        this.config.precision?.strategy ?? RoundStrategy.DOWN
+      );
     }
 
-    const formattedInteger = options.preventGrouping
+    const formattedInteger = this.config.preventGrouping
       ? String(manipulatedMoney.integer)
-      : formatIntegerWithDelimiter(manipulatedMoney.integer, integerPart.delimiter);
+      : formatWithGrouping(manipulatedMoney.integer, integerPart.delimiter);
 
     let formattedFraction = manipulatedMoney.fraction
       ? `${fractionPart.delimiter}${manipulatedMoney.formattedFraction}`
       : "";
 
-    if (!formattedFraction && !this.getTrailingZeroDisplay(options)) {
+    const hasFraction = !!formattedFraction;
+    const allowDoubleZeros = !this.trimDoubleZeros;
+    const allowPaddingZeros = !this.trimPaddingZeros;
+
+    if (!hasFraction && allowDoubleZeros) {
       formattedFraction = fractionPart.delimiter + "00";
     }
 
-    const currency = this.getSymbol(options);
+    if (hasFraction && allowPaddingZeros && this.config.precision) {
+      formattedFraction = formattedFraction.padEnd(this.config.precision.digit + 1, "0");
+    }
+
+    const currency = this.getSymbol();
     let formatted = "";
     let display = "";
 
-    for (const part of this.getTemplate(options)) {
+    for (const part of this.getTemplate()) {
       switch (part.type) {
         case "custom":
           display += part.value;
@@ -100,66 +115,79 @@ export class MoneyFormatter {
     };
   }
 
-  format(money: number | Money, formatOptions?: Partial<typeof this.options>): string {
-    const parts = this.formatToParts(money, formatOptions);
+  format(money: number | Money): string {
+    const parts = this.formatToParts(money);
     return parts.display;
   }
 
-  private getCountryCode(locale: string): Countries {
+  private getCountryCode(): Countries {
+    const { locale } = this.config;
+
     return (locale.includes("-") ? locale.split("-")[1] : locale) as Countries;
   }
 
-  private getTemplate(options: typeof this.options): TemplatePart[] {
-    const { templates, locale } = options;
-    const countryCode = this.getCountryCode(locale);
+  private getTemplate(): TemplatePart[] {
+    const { locale } = this.config;
+    const countryCode = this.getCountryCode();
 
-    if (templates[locale]) return templates[locale];
-    if (templates[countryCode]) return templates[countryCode];
-    if (templates["*"]) return templates["*"];
+    if (this.parsedTemplates[locale]) return this.parsedTemplates[locale];
+    if (this.parsedTemplates[countryCode]) return this.parsedTemplates[countryCode];
+    if (this.parsedTemplates["*"]) return this.parsedTemplates["*"];
 
-    const parsed = this.parseDefaultTemplate(options);
+    const parsed = this.parseDefaultTemplate();
 
-    const formattedParts = parsed.filter((p) => intlPartHandlers[p.type]).map((p) => intlPartHandlers[p.type](p.value));
+    const formattedParts = parsed
+      .filter((p) => intlPartHandlers[p.type])
+      .map((p) => intlPartHandlers[p.type](p.value));
 
     return formattedParts;
   }
 
-  private getSymbol(options: typeof this.options) {
-    const { locale, overridedSymbols } = options;
-    const countryCode = this.getCountryCode(locale);
+  private getSymbol() {
+    const { locale, overridedSymbols } = this.config;
+    const countryCode = this.getCountryCode();
 
     if (overridedSymbols[locale]) return overridedSymbols[locale];
     if (overridedSymbols[countryCode]) return overridedSymbols[countryCode];
     if (overridedSymbols["*"]) return overridedSymbols["*"];
 
-    const parsed = this.parseDefaultTemplate(options);
+    const parsed = this.parseDefaultTemplate();
     return parsed.find((p) => p.type === "currency")!.value;
   }
 
-  private getTrailingZeroDisplay(options: typeof this.options): boolean {
-    const { locale, trailingZeroDisplay } = options;
-    const countryCode = this.getCountryCode(locale);
+  private get trimDoubleZeros(): boolean {
+    const { locale, trimDoubleZeros } = this.config;
+    const countryCode = this.getCountryCode();
 
-    if (typeof trailingZeroDisplay === "boolean") return trailingZeroDisplay;
-    if (typeof trailingZeroDisplay[locale] !== "undefined") return trailingZeroDisplay[locale];
-    if (typeof trailingZeroDisplay[countryCode] !== "undefined") return trailingZeroDisplay[countryCode];
-    if (typeof trailingZeroDisplay["*"] !== "undefined") return trailingZeroDisplay["*"];
+    if (typeof trimDoubleZeros === "boolean") return trimDoubleZeros;
+    if (typeof trimDoubleZeros[locale] !== "undefined") return trimDoubleZeros[locale];
+    if (typeof trimDoubleZeros[countryCode] !== "undefined") return trimDoubleZeros[countryCode];
+    if (typeof trimDoubleZeros["*"] !== "undefined") return trimDoubleZeros["*"];
+
+    return false;
+  }
+
+  private get trimPaddingZeros(): boolean {
+    const { locale, trimPaddingZeros } = this.config;
+    const countryCode = this.getCountryCode();
+
+    if (typeof trimPaddingZeros === "boolean") return trimPaddingZeros;
+    if (typeof trimPaddingZeros[locale] !== "undefined") return trimPaddingZeros[locale];
+    if (typeof trimPaddingZeros[countryCode] !== "undefined") return trimPaddingZeros[countryCode];
+    if (typeof trimPaddingZeros["*"] !== "undefined") return trimPaddingZeros["*"];
 
     return false;
   }
 
   // Helpers
 
-  private parseDefaultTemplate(options: typeof this.options): Intl.NumberFormatPart[] {
-    const countryCode = this.getCountryCode(options.locale);
-    const formatter = new Intl.NumberFormat(options.locale, {
+  private parseDefaultTemplate(): Intl.NumberFormatPart[] {
+    const countryCode = this.getCountryCode();
+    const formatter = new Intl.NumberFormat(this.config.locale, {
       style: "currency",
       currency: countryToCurrency[countryCode],
       currencyDisplay: "symbol",
       maximumFractionDigits: 15,
-      ...{
-        trailingZeroDisplay: this.getTrailingZeroDisplay(options) ? "stripIfInteger" : "auto",
-      },
     });
 
     return formatter.formatToParts(1234.567);
