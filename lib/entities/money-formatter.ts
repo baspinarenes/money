@@ -21,7 +21,7 @@ export class MoneyFormatter {
   private readonly parsedTemplates: TemplateMap;
 
   constructor(config: MoneyFormatterConfig) {
-    const { locale } = config || {};
+    const { locale } = config;
 
     if (!locale || !isValidLocale(locale)) {
       throw new Error(`${LOG_PREFIX} Invalid locale: ${locale}`);
@@ -159,24 +159,27 @@ export class MoneyFormatter {
     const { locale, trimDoubleZeros } = this.config;
     const countryCode = this.getCountryCode();
 
-    if (typeof trimDoubleZeros === "boolean") return trimDoubleZeros;
-    if (typeof trimDoubleZeros[locale] !== "undefined") return trimDoubleZeros[locale];
-    if (typeof trimDoubleZeros[countryCode] !== "undefined") return trimDoubleZeros[countryCode];
-    if (typeof trimDoubleZeros["*"] !== "undefined") return trimDoubleZeros["*"];
+    if (typeof trimDoubleZeros === "object") {
+      if (typeof trimDoubleZeros[locale] !== "undefined") return trimDoubleZeros[locale];
+      if (typeof trimDoubleZeros[countryCode] !== "undefined") return trimDoubleZeros[countryCode];
+      if (typeof trimDoubleZeros["*"] !== "undefined") return trimDoubleZeros["*"];
+    }
 
-    return false;
+    return trimDoubleZeros as boolean;
   }
 
   private get trimPaddingZeros(): boolean {
     const { locale, trimPaddingZeros } = this.config;
     const countryCode = this.getCountryCode();
 
-    if (typeof trimPaddingZeros === "boolean") return trimPaddingZeros;
-    if (typeof trimPaddingZeros[locale] !== "undefined") return trimPaddingZeros[locale];
-    if (typeof trimPaddingZeros[countryCode] !== "undefined") return trimPaddingZeros[countryCode];
-    if (typeof trimPaddingZeros["*"] !== "undefined") return trimPaddingZeros["*"];
+    if (typeof trimPaddingZeros === "object") {
+      if (typeof trimPaddingZeros[locale] !== "undefined") return trimPaddingZeros[locale];
+      if (typeof trimPaddingZeros[countryCode] !== "undefined")
+        return trimPaddingZeros[countryCode];
+      if (typeof trimPaddingZeros["*"] !== "undefined") return trimPaddingZeros["*"];
+    }
 
-    return false;
+    return trimPaddingZeros as boolean;
   }
 
   // Helpers

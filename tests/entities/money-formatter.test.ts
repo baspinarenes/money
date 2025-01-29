@@ -30,7 +30,9 @@ describe("MoneyFormatter tests", () => {
 
     test("should throw an error for empty locale", () => {
       const locale = "";
-      expect(() => MoneyFormatter.create({ locale })).toThrowError(`${LOG_PREFIX} Invalid locale: ${locale}`);
+      expect(() => MoneyFormatter.create({ locale })).toThrowError(
+        `${LOG_PREFIX} Invalid locale: ${locale}`
+      );
     });
   });
 
@@ -143,7 +145,7 @@ describe("MoneyFormatter tests", () => {
     test("should format to parts with rounding", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        precision: {digit: 1, strategy: "down" },
+        precision: { digit: 1, strategy: "down" },
       });
 
       const parts = formatter.formatToParts(new Money(1234.567));
@@ -206,24 +208,30 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with trimDoubleZeros stripIfInteger", () => {
-      const optionsWithTrailingZeroDisplay: MoneyFormatterConfig = {
+      const optionsWithTrimDoubleZeros: MoneyFormatterConfig = {
         locale: "en-US",
         trimDoubleZeros: true,
       };
-      const formatter = MoneyFormatter.create(optionsWithTrailingZeroDisplay);
+      const formatter = MoneyFormatter.create(optionsWithTrimDoubleZeros);
       expect(formatter.format(1234)).toBe("$1,234");
       expect(formatter.format(1234.5)).toBe("$1,234.5");
       expect(formatter.format(1234.5)).toBe("$1,234.5");
     });
   });
 
-  describe("TrailingZeroDisplay method tests", () => {
+  describe("TrimDoubleZeros method tests", () => {
     test("should handle trailingZeroDisplay as boolean", () => {
+      const formatterUndefined = MoneyFormatter.create({
+        locale: "en-US",
+      });
+      expect(formatterUndefined.format(1234)).toBe("$1,234.00");
+
       const formatterTrue = MoneyFormatter.create({
         locale: "en-US",
         trimDoubleZeros: true,
       });
       expect(formatterTrue.format(1234)).toBe("$1,234");
+
       const formatterFalse = MoneyFormatter.create({
         locale: "en-US",
         trimDoubleZeros: false,
@@ -258,6 +266,60 @@ describe("MoneyFormatter tests", () => {
     });
   });
 
+  describe("TrimPaddingZeros method tests", () => {
+    test("should handle trailingZeroDisplay as boolean", () => {
+      const formatterUndefined = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+      });
+      expect(formatterUndefined.format(1234.5)).toBe("$1,234.50");
+
+      const formatterTrue = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+        trimPaddingZeros: true,
+      });
+      expect(formatterTrue.format(1234.5)).toBe("$1,234.5");
+
+      const formatterFalse = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+        trimPaddingZeros: false,
+      });
+      expect(formatterFalse.format(1234.5)).toBe("$1,234.50");
+    });
+
+    test("should handle trimPaddingZeros as object", () => {
+      const formatterLocale = MoneyFormatter.create({
+        locale: "en-GB",
+        precision: { digit: 2 },
+        trimPaddingZeros: { "en-GB": true },
+      });
+      expect(formatterLocale.format(1234.5)).toBe("£1,234.5");
+
+      const formatterCountryCode = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+        trimPaddingZeros: { US: true },
+      });
+      expect(formatterCountryCode.format(1234.5)).toBe("$1,234.5");
+
+      const formatterDefault = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+        trimPaddingZeros: { "*": true },
+      });
+      expect(formatterDefault.format(1234.5)).toBe("$1,234.5");
+
+      const formatterMixed = MoneyFormatter.create({
+        locale: "en-US",
+        precision: { digit: 2 },
+        trimPaddingZeros: { "en-US": false, "*": true },
+      });
+      expect(formatterMixed.format(1234.5)).toBe("$1,234.50");
+    });
+  });
+
   describe("Format method tests", () => {
     test("should format number", () => {
       const formatter = MoneyFormatter.create({ locale: "en-US" });
@@ -367,7 +429,7 @@ describe("MoneyFormatter tests", () => {
     test("should format to parts with rounding", () => {
       const formatter = MoneyFormatter.create({
         locale: "en-US",
-        precision: {digit: 1, strategy: "down" },
+        precision: { digit: 1, strategy: "down" },
       });
 
       const parts = formatter.formatToParts(new Money(1234.567));
@@ -430,11 +492,11 @@ describe("MoneyFormatter tests", () => {
     });
 
     test("should format to parts with trimDoubleZeros stripIfInteger", () => {
-      const optionsWithTrailingZeroDisplay: MoneyFormatterConfig = {
+      const optionsWithTrimDoubleZeros: MoneyFormatterConfig = {
         locale: "en-US",
         trimDoubleZeros: true,
       };
-      const formatter = MoneyFormatter.create(optionsWithTrailingZeroDisplay);
+      const formatter = MoneyFormatter.create(optionsWithTrimDoubleZeros);
       expect(formatter.format(1234)).toBe("$1,234");
       expect(formatter.format(1234.5)).toBe("$1,234.5");
       expect(formatter.format(1234.5)).toBe("$1,234.5");

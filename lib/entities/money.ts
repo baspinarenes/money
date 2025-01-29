@@ -35,10 +35,6 @@ export class Money {
     return formatted;
   }
 
-  static create(amount: number) {
-    return new Money(amount);
-  }
-
   protected handleFraction() {
     const fractionPart = minus(this.value, this.integer);
     const fractionString = fractionPart.toFixed();
