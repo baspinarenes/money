@@ -21,48 +21,9 @@ yarn add @enesbaspinar/money
 pnpm install @enesbaspinar/money
 ```
 
-## Quick Start
-
-Import the library and start using it to handle monetary values:
-
-```typescript
-import { money } from "@enesbaspinar/money";
-
-const manipulatedMoney = money(12345.67).add(200).discount(0.5).round(2).amount;
-
-console.log(manipulatedMoney); // 6272.84
-```
-
-Also format monetary values by locale:
-
-```typescript
-import { monetizer, RoundStrategy } from "@enesbaspinar/money";
-
-const money = monetizer({ locale: "tr-TR" });
-console.log(money(12345.67).format()); // ₺12.345,67
-
-const advancedMoney = monetizer({
-  locale: "tr-TR",
-  precision: {
-    digit: 2,
-    strategy: RoundStrategy.DOWN,
-  },
-  preventGrouping: false,
-  trimDoubleZeros: true,
-  trimPaddingZeros: true,
-  overridedSymbols: {
-    TR: "TL",
-  },
-  templates: {
-    "*": "{currency}{integer|,}{fraction|.}",
-    TR: "{integer|,}{fraction|.} {currency}",
-  },
-});
-console.log(advancedMoney(12345.67).format()); // 12,345.67 TL
-console.log(advancedMoney(12345.67).format({ locale: "de-DE" })); // €12,345.67
-```
-
 ## Documentation
+
+Visit [https://www.enesbaspinar.com/packages/money](https://www.enesbaspinar.com/packages/money) for documentation.
 
 ## Contributing
 
