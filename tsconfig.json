@@ -1,50 +1,27 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    /* Bundler mode */
+    "lib": ["ES2020", "DOM"],
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "allowJs": true,
-    /* Linting */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "types": [
-      "vitest/globals",
-    ],
-    "paths": {
-      "@entities": [
-        "./lib/entities"
-      ],
-      "@utils": [
-        "./lib/utils"
-      ],
-      "@types": [
-        "./lib/models/types"
-      ],
-      "@constants": [
-        "./lib/models/constants"
-      ],
-      "@enums": [
-        "./lib/models/enums"
-      ],
-    },
+    "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "lib",
-    "tests",
-    "playgrounds"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }
+

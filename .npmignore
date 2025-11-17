@@ -1,0 +1,11 @@
+src/
+tsconfig.json
+tsup.config.ts
+.eslintrc.json
+.gitignore
+*.test.ts
+*.spec.ts
+coverage/
+.idea/
+.vscode/
+
