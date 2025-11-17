@@ -1,3 +1,5 @@
+import { Money } from "../entities/money";
+
 export enum RoundStrategy {
   NEAREST,
   UP,
@@ -33,32 +35,3 @@ export interface ParseOptions {
 }
 
 export type MoneyInput = number | string | Money;
-
-export declare class Money {
-  readonly value: string;
-  readonly amount: number;
-
-  constructor(value: MoneyInput);
-
-  add(other: MoneyInput): Money;
-  subtract(other: MoneyInput): Money;
-  multiply(factor: number | string): Money;
-  divide(divisor: number | string): Money;
-  round(precision?: number, roundingStrategy?: RoundStrategy): Money;
-  discount(percentage: number | string): Money;
-  equal(other: MoneyInput): boolean;
-  compare(other: MoneyInput): ComparisonResult;
-  isZero(): boolean;
-  isPositive(): boolean;
-  isNegative(): boolean;
-  abs(): Money;
-  negate(): Money;
-  format(options?: FormatOptions): string;
-  formatToParts(options?: FormatOptions): FormatPart[];
-  toNumber(): number;
-  toString(): string;
-  toJSON(): string;
-
-  static parse(value: string, options?: ParseOptions): Money;
-}
-

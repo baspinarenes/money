@@ -1,8 +1,3 @@
-/**
- * Basic Usage Examples
- * Demonstrates zero-config and simple API usage
- */
-
 import { money, RoundStrategy } from '../src/index';
 
 console.log('=== Basic Usage Examples ===\n');
@@ -45,7 +40,8 @@ console.log();
 // International formatting
 console.log('5. International formatting:');
 const amount = money(1234.56);
-console.log(`US: ${amount.format({ locale: 'en-US', currency: 'USD' })}`);
-console.log(`DE: ${amount.format({ locale: 'de-DE', currency: 'EUR' })}`);
-console.log(`TR: ${amount.format({ locale: 'tr-TR', currency: 'TRY' })}`);
-console.log(`JP: ${amount.format({ locale: 'ja-JP', currency: 'JPY' })}`);
+console.log(`US: ${amount.format({ locale: 'en-US', })}`);
+console.log(`DE: ${amount.format({ locale: 'de-DE', })}`);
+console.log(`TR: ${amount.format({ locale: 'tr-TR', })}`);
+console.log(`JP: ${amount.format({ locale: 'ja-JP' })}`);
+console.log(`JP: ${amount.format({ locale: 'az-AZ', currency: "TRY" })}`);

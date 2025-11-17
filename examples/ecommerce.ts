@@ -1,8 +1,3 @@
-/**
- * E-commerce Shopping Cart Example
- * Demonstrates real-world usage in shopping cart scenarios
- */
-
 import { money } from '../src/index';
 
 console.log('=== E-commerce Shopping Cart Example ===\n');
