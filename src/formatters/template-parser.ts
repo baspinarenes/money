@@ -146,7 +146,7 @@ export function formatWithTemplate(
   return formatted.trim();
 }
 
-function formatNumberParts(value: number, pattern: TemplatePattern, precision?: number): {
+export function formatNumberParts(value: number, pattern: TemplatePattern, precision?: number): {
   formattedNumber: string;
   integerPart: string;
   decimalPart: string;
