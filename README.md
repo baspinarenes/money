@@ -208,15 +208,6 @@ money(-100).abs()  // Money(100)
 money(100).abs()   // Money(100)
 ```
 
-#### `negate(): Money`
-
-Negate the value.
-
-```typescript
-money(100).negate()  // Money(-100)
-money(-100).negate()  // Money(100)
-```
-
 ### Conversion Methods
 
 #### `toNumber(): number`

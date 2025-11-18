@@ -1,15 +1,15 @@
 export interface TemplatePattern {
-  symbolPosition: 'prefix' | 'suffix';
-  symbolPlaceholder: string;
-  customSymbol?: string;
-  thousandsSeparator: string;
-  decimalSeparator: string;
-  spaces: number[];
-  structure: string;
-  numberPattern: {
-    integerDigits: number;
-    decimalDigits: number;
-    hasGrouping: boolean;
+  readonly symbolPosition: 'prefix' | 'suffix';
+  readonly symbolPlaceholder: string;
+  readonly customSymbol?: string;
+  readonly thousandsSeparator: string;
+  readonly decimalSeparator: string;
+  readonly spaces: readonly number[];
+  readonly structure: string;
+  readonly numberPattern: {
+    readonly integerDigits: number;
+    readonly decimalDigits: number;
+    readonly hasGrouping: boolean;
   };
 }
 
@@ -115,35 +115,34 @@ export function formatWithTemplate(
   precision?: number
 ): string {
   const parts = formatNumberParts(value, pattern, precision);
-
-  let formatted = pattern.structure;
-  
-  // Use custom symbol if specified in template (e.g., {Symbol:TL})
   const symbolToUse = pattern.customSymbol || symbol;
   
-  // Replace {Symbol:XXX} or {Symbol} placeholder
+  let formatted = replaceSymbolPlaceholder(pattern, symbolToUse);
+  formatted = replaceNumberPattern(formatted, parts.formattedNumber);
+  
+  return formatted.trim();
+}
+
+function replaceSymbolPlaceholder(pattern: TemplatePattern, symbol: string): string {
+  let result = pattern.structure;
+  
   if (pattern.customSymbol) {
-    formatted = formatted.replace(/\{Symbol:[^}]+\}/gi, symbolToUse);
-  } else if (formatted.includes('{Symbol}')) {
-    formatted = formatted.replace(/\{Symbol\}/gi, symbolToUse);
+    result = result.replace(/\{Symbol:[^}]+\}/gi, symbol);
+  } else if (result.includes('{Symbol}')) {
+    result = result.replace(/\{Symbol\}/gi, symbol);
   } else {
     // If no placeholder, append symbol based on position
-    if (pattern.symbolPosition === 'suffix') {
-      formatted = `${formatted} ${symbolToUse}`;
-    } else {
-      formatted = `${symbolToUse} ${formatted}`;
-    }
+    result = pattern.symbolPosition === 'suffix'
+      ? `${result} ${symbol}`
+      : `${symbol} ${result}`;
   }
-
-  const numberPatternRegex = /[\d.,]+/g;
-  const numberMatches = formatted.match(numberPatternRegex);
   
-  if (numberMatches && numberMatches.length > 0) {
-    const firstMatch = numberMatches[0];
-    formatted = formatted.replace(firstMatch, parts.formattedNumber);
-  }
+  return result;
+}
 
-  return formatted.trim();
+function replaceNumberPattern(formatted: string, formattedNumber: string): string {
+  const numberMatch = formatted.match(/[\d.,]+/);
+  return numberMatch ? formatted.replace(numberMatch[0], formattedNumber) : formatted;
 }
 
 export function formatNumberParts(value: number, pattern: TemplatePattern, precision?: number): {
@@ -151,35 +150,42 @@ export function formatNumberParts(value: number, pattern: TemplatePattern, preci
   integerPart: string;
   decimalPart: string;
 } {
-  const isNegative = value < 0;
   const absValue = Math.abs(value);
+  const [integerStr, decimalStr = ''] = absValue.toString().split('.');
 
-  const valueStr = absValue.toString();
-  const [integerStr, decimalStr = ''] = valueStr.split('.');
-
-  let formattedInteger = integerStr;
-  if (pattern.thousandsSeparator && integerStr.length > 3) {
-    const reversed = integerStr.split('').reverse();
-    const grouped: string[] = [];
-    
-    for (let i = 0; i < reversed.length; i += 3) {
-      grouped.push(reversed.slice(i, i + 3).reverse().join(''));
-    }
-    
-    formattedInteger = grouped.reverse().join(pattern.thousandsSeparator);
-  }
-
+  const formattedInteger = formatIntegerPart(integerStr, pattern.thousandsSeparator);
   const decimalDigits = precision ?? pattern.numberPattern.decimalDigits ?? 2;
-  const formattedDecimal = (decimalStr || '00').padEnd(decimalDigits, '0').substring(0, decimalDigits);
+  const formattedDecimal = formatDecimalPart(decimalStr, decimalDigits);
+  
   const decimalWithSeparator = formattedDecimal
     ? `${pattern.decimalSeparator}${formattedDecimal}`
     : '';
 
-  const formattedNumber = `${isNegative ? '-' : ''}${formattedInteger}${decimalWithSeparator}`;
+  const sign = value < 0 ? '-' : '';
+  const formattedNumber = `${sign}${formattedInteger}${decimalWithSeparator}`;
 
   return {
     formattedNumber,
     integerPart: formattedInteger,
     decimalPart: formattedDecimal,
   };
+}
+
+function formatIntegerPart(integerStr: string, separator: string): string {
+  if (!separator || integerStr.length <= 3) {
+    return integerStr;
+  }
+  
+  const reversed = integerStr.split('').reverse();
+  const grouped: string[] = [];
+  
+  for (let i = 0; i < reversed.length; i += 3) {
+    grouped.push(reversed.slice(i, i + 3).reverse().join(''));
+  }
+  
+  return grouped.reverse().join(separator);
+}
+
+function formatDecimalPart(decimalStr: string, digits: number): string {
+  return (decimalStr || '00').padEnd(digits, '0').substring(0, digits);
 }

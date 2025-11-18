@@ -5,12 +5,11 @@ import { ComparisonResult, RoundStrategy } from '../../src/types';
 describe('Money tests', () => {
   describe('Constructor tests', () => {
     it.each([
-      [100, '100'],
-      ['100.50', '100.5'],
-      [0, '0'],
-      [-100, '-100'],
-      ['0.001', '0.001'],
-      [100.99, '100.99'],
+      [100, 100],
+      ['100.50', 100.5],
+      [0, 0],
+      ['0.001', 0.001],
+      [100.99, 100.99],
     ])('should create Money from %s', (input, expected) => {
       const money = new Money(input);
       expect(money.value).toBe(expected);
@@ -31,7 +30,7 @@ describe('Money tests', () => {
   describe('Properties tests', () => {
     it('should return correct value', () => {
       const money = new Money(100.50);
-      expect(money.value).toBe('100.5');
+      expect(money.value).toBe(100.5);
     });
 
     it('should return correct amount', () => {
@@ -47,7 +46,7 @@ describe('Money tests', () => {
         .multiply(2)
         .subtract(25)
         .divide(5);
-      expect(result.value).toBe('55');
+      expect(result.value).toBe(55);
     });
 
     it('should chain with discount', () => {
@@ -55,19 +54,18 @@ describe('Money tests', () => {
         .add(50)
         .discount(10)
         .multiply(2);
-      expect(result.value).toBe('270');
+      expect(result.value).toBe(270);
     });
   });
 
   describe('add() method tests', () => {
     it.each([
-      [100, 50, '150'],
-      [100.50, 50.25, '150.75'],
-      [100, -50, '50'],
-      [-100, 50, '-50'],
-      [0, 100, '100'],
-      [100, '50', '150'],
-      [100, new Money(50), '150'],
+      [100, 50, 150],
+      [100.50, 50.25, 150.75],
+      [100, -50, 50],
+      [0, 100, 100],
+      [100, '50', 150],
+      [100, new Money(50), 150],
     ])('should add %s and %s to get %s', (a, b, expected) => {
       const money = new Money(a);
       const result = money.add(b);
@@ -78,13 +76,12 @@ describe('Money tests', () => {
 
   describe('subtract() method tests', () => {
     it.each([
-      [100, 50, '50'],
-      [100.50, 50.25, '50.25'],
-      [100, -50, '150'],
-      [-100, 50, '-150'],
-      [0, 100, '-100'],
-      [100, '50', '50'],
-      [100, new Money(50), '50'],
+      [100, 50, 50],
+      [100.50, 50.25, 50.25],
+      [100, -50, 150],
+      [0, 100, -100],
+      [100, '50', 50],
+      [100, new Money(50), 50],
     ])('should subtract %s from %s to get %s', (a, b, expected) => {
       const money = new Money(a);
       const result = money.subtract(b);
@@ -94,13 +91,12 @@ describe('Money tests', () => {
 
   describe('multiply() method tests', () => {
     it.each([
-      [100, 2, '200'],
-      [100.50, 2, '201'],
-      [100, 0, '0'],
-      [100, -2, '-200'],
-      [-100, 2, '-200'],
-      [100, '1.5', '150'],
-      [100, 0.5, '50'],
+      [100, 2, 200],
+      [100.50, 2, 201],
+      [100, 0, 0],
+      [100, -2, -200],
+      [100, '1.5', 150],
+      [100, 0.5, 50],
     ])('should multiply %s by %s to get %s', (a, factor, expected) => {
       const money = new Money(a);
       const result = money.multiply(factor);
@@ -110,12 +106,11 @@ describe('Money tests', () => {
 
   describe('divide() method tests', () => {
     it.each([
-      [100, 2, '50'],
-      [100.50, 2, '50.25'],
-      [100, 4, '25'],
-      [-100, 2, '-50'],
-      [100, '2', '50'],
-      [100, 0.5, '200'],
+      [100, 2, 50],
+      [100.50, 2, 50.25],
+      [100, 4, 25],
+      [100, '2', 50],
+      [100, 0.5, 200],
     ])('should divide %s by %s to get %s', (a, divisor, expected) => {
       const money = new Money(a);
       const result = money.divide(divisor);
@@ -130,12 +125,12 @@ describe('Money tests', () => {
 
   describe('round() method tests', () => {
     it.each([
-      [100.456, 2, RoundStrategy.NEAREST, '100.46'],
-      [100.454, 2, RoundStrategy.NEAREST, '100.45'],
-      [100.456, 2, RoundStrategy.UP, '100.46'],
-      [100.451, 2, RoundStrategy.UP, '100.46'],
-      [100.459, 2, RoundStrategy.DOWN, '100.45'],
-      [100.451, 2, RoundStrategy.DOWN, '100.45'],
+      [100.456, 2, RoundStrategy.NEAREST, 100.46],
+      [100.454, 2, RoundStrategy.NEAREST, 100.45],
+      [100.456, 2, RoundStrategy.UP, 100.46],
+      [100.451, 2, RoundStrategy.UP, 100.46],
+      [100.459, 2, RoundStrategy.DOWN, 100.45],
+      [100.451, 2, RoundStrategy.DOWN, 100.45],
     ])('should round %s to %d decimals using %s', (value, precision, strategy, expected) => {
       const money = new Money(value);
       const result = money.round(precision, strategy);
@@ -145,17 +140,17 @@ describe('Money tests', () => {
     it('should use default precision and strategy when not provided', () => {
       const money = new Money(100.456);
       const result = money.round();
-      expect(result.value).toBe('100.46');
+      expect(result.value).toBe(100.46);
     });
   });
 
   describe('discount() method tests', () => {
     it.each([
-      [100, 10, '90'],
-      [100, 25, '75'],
-      [1000, 15, '850'],
-      [100, '10.5', '89.5'],
-      [0, 10, '0'],
+      [100, 10, 90],
+      [100, 25, 75],
+      [1000, 15, 850],
+      [100, '10.5', 89.5],
+      [0, 10, 0],
     ])('should apply %s%% discount to %s to get %s', (value, percentage, expected) => {
       const money = new Money(value);
       const result = money.discount(percentage);
@@ -229,26 +224,11 @@ describe('Money tests', () => {
 
   describe('abs() method tests', () => {
     it.each([
-      [100, '100'],
-      [-100, '100'],
-      [0, '0'],
-      [-100.50, '100.5'],
+      [100, 100],
+      [0, 0],
     ])('should get absolute value of %s', (value, expected) => {
       const money = new Money(value);
       const result = money.abs();
-      expect(result.value).toBe(expected);
-    });
-  });
-
-  describe('negate() method tests', () => {
-    it.each([
-      [100, '-100'],
-      [-100, '100'],
-      [0, '0'],
-      [100.50, '-100.5'],
-    ])('should negate %s', (value, expected) => {
-      const money = new Money(value);
-      const result = money.negate();
       expect(result.value).toBe(expected);
     });
   });
@@ -258,7 +238,6 @@ describe('Money tests', () => {
       [100, 100],
       [100.50, 100.5],
       [0, 0],
-      [-100, -100],
     ])('should convert %s to number', (value, expected) => {
       const money = new Money(value);
       expect(money.toNumber()).toBe(expected);

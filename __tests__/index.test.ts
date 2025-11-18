@@ -42,7 +42,7 @@ describe('Public API tests', () => {
   
       it('should create Money from string', () => {
         const result = money('100.50');
-        expect(result.value).toBe('100.5');
+        expect(result.value).toBe(100.5);
       });
   
       it('should create Money from Money instance', () => {

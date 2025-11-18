@@ -35,23 +35,25 @@ export class Money {
     }
   }
 
-  get value(): string {
-    return this._value.toString();
-  }
-
-  get amount(): number {
+  get value(): number {
     return this._value.toNumber();
   }
 
+  get amount(): number {
+    return this.value;
+  }
+
+  private convertToBig(other: MoneyInput): Big {
+    return other instanceof Money ? other._value : toBig(other);
+  }
+
   add(other: MoneyInput): Money {
-    const otherBig = other instanceof Money ? other._value : toBig(other);
-    const result = addBig(this._value, otherBig);
+    const result = addBig(this._value, this.convertToBig(other));
     return new Money(result.toString());
   }
 
   subtract(other: MoneyInput): Money {
-    const otherBig = other instanceof Money ? other._value : toBig(other);
-    const result = subtractBig(this._value, otherBig);
+    const result = subtractBig(this._value, this.convertToBig(other));
     return new Money(result.toString());
   }
 
@@ -84,14 +86,11 @@ export class Money {
   }
 
   equal(other: MoneyInput): boolean {
-    const otherBig = other instanceof Money ? other._value : toBig(other);
-    return this._value.eq(otherBig);
+    return this._value.eq(this.convertToBig(other));
   }
 
   compare(other: MoneyInput): ComparisonResult {
-    const otherBig = other instanceof Money ? other._value : toBig(other);
-    const result = compareBig(this._value, otherBig);
-    return result as ComparisonResult;
+    return compareBig(this._value, this.convertToBig(other)) as ComparisonResult;
   }
 
   isZero(): boolean {
@@ -107,54 +106,49 @@ export class Money {
   }
 
   abs(): Money {
-    return new Money(this._value.abs().toString());
-  }
-
-  negate(): Money {
-    return new Money(this._value.times(-1).toString());
+    return new Money(this._value.abs().toNumber());
   }
 
   format(options: FormatOptions = {}): string {
-    return MoneyFormatter.format(this._value.toNumber(), options);
+    const components = this.formatToComponents(options);
+    return components.formattedWithSymbol;
   }
 
   formatToParts(options: FormatOptions = {}): FormatPart[] {
-    const { precision, roundingStrategy } = options;
-
-    let valueToFormat = this._value;
-    if (precision) {
-      valueToFormat = round(valueToFormat, precision, roundingStrategy);
-    }
-
-    const numericValue = valueToFormat.toNumber();
-    return MoneyFormatter.formatToParts(numericValue, options);
+    return MoneyFormatter.formatToParts(this._value.toNumber(), options);
   }
 
   formatToComponents(options: FormatOptions = {}): FormatComponents {
     const parts = this.formatToParts(options);
     
-    const currencyPart = parts.find((part) => part.type === 'currency');
-    const currency = currencyPart?.value || '';
+    let currency = '';
+    let groupDelimiter = '';
+    let decimalDelimiter = '.';
+    const formattedParts: string[] = [];
+    const allParts: string[] = [];
     
-    const groupPart = parts.find((part) => part.type === 'group');
-    const groupDelimiter = groupPart?.value || '';
-    
-    const decimalPart = parts.find((part) => part.type === 'decimal');
-    const decimalDelimiter = decimalPart?.value || '.';
-    
-    const formatted = parts
-      .filter((part) => part.type !== 'currency')
-      .map((part) => part.value)
-      .join('');
-    
-    const formattedWithSymbol = parts.map((part) => part.value).join('');
+    for (const part of parts) {
+      allParts.push(part.value);
+      
+      if (part.type === 'currency') {
+        currency = part.value;
+      } else {
+        formattedParts.push(part.value);
+        
+        if (part.type === 'group') {
+          groupDelimiter = part.value;
+        } else if (part.type === 'decimal') {
+          decimalDelimiter = part.value;
+        }
+      }
+    }
     
     return {
       currency,
       groupDelimiter,
       decimalDelimiter,
-      formatted,
-      formattedWithSymbol,
+      formatted: formattedParts.join(''),
+      formattedWithSymbol: allParts.join(''),
     };
   }
 
