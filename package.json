@@ -1,6 +1,6 @@
 {
   "name": "@enesbaspinar/money",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "A comprehensive library for precise monetary calculations and customizable locale-based currency formatting.",
   "author": "Enes Başpınar <ensbaspinar@gmail.com>",
   "type": "module",
