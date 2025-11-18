@@ -560,5 +560,36 @@ describe('Money tests', () => {
       });
     });
   });
+
+  describe('Turkish TL format tests', () => {
+    it('should convert price to TRY format with TL symbol', () => {
+      const price1 = new Money(97.65);
+      const price2 = new Money(1234.56);
+      const price3 = new Money(25.0);
+      const price4 = new Money(0);
+      const price5 = new Money(1234567890);
+
+      const formatOptions = {
+        locale: 'tr-TR',
+        currency: 'TRY',
+      };
+
+      expect(price1.format(formatOptions)).toBe('₺97,65');
+      expect(price2.format(formatOptions)).toBe('₺1.234,56');
+      expect(price3.format(formatOptions)).toBe('₺25,00');
+      expect(price4.format(formatOptions)).toBe('₺0,00');
+      expect(price5.format(formatOptions)).toBe('₺1.234.567.890,00');
+
+      const templates = {
+        default: '1.000,00 {Symbol:TL}',
+      };
+
+      expect(price1.format({...formatOptions, templates})).toBe('97,65 TL');
+      expect(price2.format({...formatOptions, templates})).toBe('1.234,56 TL');
+      expect(price3.format({...formatOptions, templates})).toBe('25,00 TL');
+      expect(price4.format({...formatOptions, templates})).toBe('0,00 TL');
+      expect(price5.format({...formatOptions, templates})).toBe('1.234.567.890,00 TL');
+    });
+  });
 });
 

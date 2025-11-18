@@ -115,8 +115,7 @@ export class Money {
   }
 
   format(options: FormatOptions = {}): string {
-    const components = this.formatToComponents(options);
-    return components.formattedWithSymbol;
+    return MoneyFormatter.format(this._value.toNumber(), options);
   }
 
   formatToParts(options: FormatOptions = {}): FormatPart[] {

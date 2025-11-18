@@ -375,11 +375,12 @@ enum RoundStrategy {
 
 ## 🎨 Custom Templates
 
-Templates allow you to define custom formatting patterns for different locales. The template system uses `{Symbol}` as a placeholder for the currency symbol and detects separators from your pattern.
+Templates allow you to define custom formatting patterns for different locales. The template system uses `{Symbol}` or `{Symbol:XXX}` as placeholders for the currency symbol and detects separators from your pattern.
 
 ### Template Syntax
 
-- `{Symbol}` - Placeholder for currency symbol (auto-detected position)
+- `{Symbol}` - Placeholder for currency symbol (auto-detected from locale/currency)
+- `{Symbol:XXX}` - Override currency symbol with custom value (e.g., `{Symbol:TL}` for "TL" instead of "₺")
 - Number pattern - Defines decimal and thousands separators
 - Spaces - Preserved in output
 
@@ -426,6 +427,34 @@ amount.format({
 })  // "₺ 5.000,99"
 ```
 
+#### Custom Symbol Override with {Symbol:XXX}
+
+You can override the currency symbol directly in the template using `{Symbol:XXX}` syntax:
+
+```typescript
+import { money } from '@enesbaspinar/money';
+
+const amount = money(1234.56);
+
+// Use Turkish locale formatting with custom "TL" symbol instead of "₺"
+amount.format({
+  locale: 'tr-TR',
+  currency: 'TRY',
+  templates: {
+    'tr-TR': '1.000,00 {Symbol:TL}',  // Custom symbol override
+  }
+})  // "1.234,56 TL" - Turkish format with "TL" symbol
+
+// Use default template with custom symbol
+amount.format({
+  locale: 'tr-TR',
+  currency: 'TRY',
+  templates: {
+    default: '1.000,00 {Symbol:TL}',  // Works with default template too
+  }
+})  // "1.234,56 TL"
+```
+
 #### Locale-Based Templates with Currency Override
 
 ```typescript
@@ -450,6 +479,15 @@ amount.format({
     'de-DE': '{Symbol} 1.000,00',
   }
 })  // "₺ 1.234,56" - German format with TRY currency
+
+// Or use custom symbol override in template
+amount.format({
+  locale: 'de-DE',
+  currency: 'TRY',
+  templates: {
+    'de-DE': '{Symbol:TL} 1.000,00',  // Custom symbol override
+  }
+})  // "TL 1.234,56" - German format with "TL" symbol
 ```
 
 #### Multiple Locale Templates
@@ -554,6 +592,15 @@ price.format({
   currency: 'USD',  // Override currency
   templates,
 })  // "$ 1.234,57" - Turkish format, USD currency
+
+// Format for Turkish market with custom "TL" symbol
+price.format({
+  locale: 'tr-TR',
+  currency: 'TRY',
+  templates: {
+    'tr-TR': '1.000,00 {Symbol:TL}',  // Custom symbol override
+  },
+})  // "1.234,57 TL" - Turkish format with "TL" symbol
 
 // Format for German market with TRY currency
 price.format({

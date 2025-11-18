@@ -1,6 +1,7 @@
 export interface TemplatePattern {
   symbolPosition: 'prefix' | 'suffix';
   symbolPlaceholder: string;
+  customSymbol?: string;
   thousandsSeparator: string;
   decimalSeparator: string;
   spaces: number[];
@@ -13,29 +14,36 @@ export interface TemplatePattern {
 }
 
 export function parseTemplate(template: string): TemplatePattern {
-  const symbolMatch = template.match(/\{Symbol\}/i);
-  const symbolIndex = symbolMatch ? symbolMatch.index! : -1;
-  const symbolPosition: 'prefix' | 'suffix' = symbolIndex < template.length / 2 ? 'prefix' : 'suffix';
+  const symbolMatch = template.match(/\{Symbol(?::([^}]+))?\}/i);
+  const customSymbol = symbolMatch?.[1];
+  const symbolPlaceholder = symbolMatch?.[0] ?? '{Symbol}';
 
-  const numberPart = template.replace(/\{Symbol\}/gi, '').trim();
+  const numberPart = symbolMatch
+    ? template.replace(symbolMatch[0], '').trim()
+    : template.trim();
+
+  const symbolIndex = symbolMatch?.index ?? template.indexOf('{Symbol}');
+  const symbolPosition: 'prefix' | 'suffix' =
+    symbolIndex >= 0 && symbolIndex < template.length / 2 ? 'prefix' : 'suffix';
 
   const decimalSeparator = detectDecimalSeparator(numberPart);
-  const thousandsSeparator = detectThousandsSeparator(numberPart, decimalSeparator);
+  const thousandsSeparator = detectThousandsSeparator(
+    numberPart,
+    decimalSeparator
+  );
 
-  const spaces: number[] = [];
-  let searchIndex = 0;
-  let spaceIndex = template.indexOf(' ', searchIndex);
-  while (spaceIndex !== -1) {
-    spaces.push(spaceIndex);
-    searchIndex = spaceIndex + 1;
-    spaceIndex = template.indexOf(' ', searchIndex);
-  }
+  const spaces = [...template.matchAll(/ /g)].map((m) => m.index!);
 
-  const numberPattern = analyzeNumberPattern(numberPart, thousandsSeparator, decimalSeparator);
+  const numberPattern = analyzeNumberPattern(
+    numberPart,
+    thousandsSeparator,
+    decimalSeparator
+  );
 
   return {
     symbolPosition,
-    symbolPlaceholder: '{Symbol}',
+    symbolPlaceholder,
+    customSymbol,
     thousandsSeparator,
     decimalSeparator,
     spaces,
@@ -43,6 +51,7 @@ export function parseTemplate(template: string): TemplatePattern {
     numberPattern,
   };
 }
+
 
 function analyzeNumberPattern(
   numberPart: string,
@@ -107,7 +116,24 @@ export function formatWithTemplate(
 ): string {
   const parts = formatNumberParts(value, pattern, precision);
 
-  let formatted = pattern.structure.replace(/\{Symbol\}/gi, symbol);
+  let formatted = pattern.structure;
+  
+  // Use custom symbol if specified in template (e.g., {Symbol:TL})
+  const symbolToUse = pattern.customSymbol || symbol;
+  
+  // Replace {Symbol:XXX} or {Symbol} placeholder
+  if (pattern.customSymbol) {
+    formatted = formatted.replace(/\{Symbol:[^}]+\}/gi, symbolToUse);
+  } else if (formatted.includes('{Symbol}')) {
+    formatted = formatted.replace(/\{Symbol\}/gi, symbolToUse);
+  } else {
+    // If no placeholder, append symbol based on position
+    if (pattern.symbolPosition === 'suffix') {
+      formatted = `${formatted} ${symbolToUse}`;
+    } else {
+      formatted = `${symbolToUse} ${formatted}`;
+    }
+  }
 
   const numberPatternRegex = /[\d.,]+/g;
   const numberMatches = formatted.match(numberPatternRegex);
