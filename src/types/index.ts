@@ -17,6 +17,14 @@ export interface FormatPart {
   value: string;
 }
 
+export interface FormatComponents {
+  currency: string;
+  groupDelimiter: string;
+  decimalDelimiter: string;
+  formatted: string;
+  formattedWithSymbol: string;
+}
+
 export interface FormatOptions {
   locale?: string;
   currency?: string;

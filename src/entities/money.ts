@@ -2,6 +2,7 @@ import Big from 'big.js';
 import { MoneyFormatter } from '../formatters/money-formatter';
 import {
   ComparisonResult,
+  FormatComponents,
   FormatOptions,
   FormatPart,
   MoneyInput,
@@ -114,16 +115,8 @@ export class Money {
   }
 
   format(options: FormatOptions = {}): string {
-    const { precision, roundingStrategy } = options;
-
-    let valueToFormat = this._value;
-    if (precision) {
-      valueToFormat = round(valueToFormat, precision, roundingStrategy);
-    }
-
-    const numericValue = valueToFormat.toNumber();
-
-    return MoneyFormatter.format(numericValue, options);
+    const components = this.formatToComponents(options);
+    return components.formattedWithSymbol;
   }
 
   formatToParts(options: FormatOptions = {}): FormatPart[] {
@@ -136,6 +129,34 @@ export class Money {
 
     const numericValue = valueToFormat.toNumber();
     return MoneyFormatter.formatToParts(numericValue, options);
+  }
+
+  formatToComponents(options: FormatOptions = {}): FormatComponents {
+    const parts = this.formatToParts(options);
+    
+    const currencyPart = parts.find((part) => part.type === 'currency');
+    const currency = currencyPart?.value || '';
+    
+    const groupPart = parts.find((part) => part.type === 'group');
+    const groupDelimiter = groupPart?.value || '';
+    
+    const decimalPart = parts.find((part) => part.type === 'decimal');
+    const decimalDelimiter = decimalPart?.value || '.';
+    
+    const formatted = parts
+      .filter((part) => part.type !== 'currency')
+      .map((part) => part.value)
+      .join('');
+    
+    const formattedWithSymbol = parts.map((part) => part.value).join('');
+    
+    return {
+      currency,
+      groupDelimiter,
+      decimalDelimiter,
+      formatted,
+      formattedWithSymbol,
+    };
   }
 
   toNumber(): number {

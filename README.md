@@ -280,6 +280,50 @@ money(1000.50).formatToParts({
 // ]
 ```
 
+#### `formatToComponents(options?: FormatOptions): FormatComponents`
+
+Format to structured components object for easy access to formatting parts.
+
+```typescript
+money(1000.50).formatToComponents({
+  locale: 'en-US',
+  currency: 'USD'
+})
+// {
+//   currency: "$",
+//   groupDelimiter: ",",
+//   decimalDelimiter: ".",
+//   formatted: "1,000.50",
+//   formattedWithSymbol: "$1,000.50"
+// }
+
+// German format
+money(1000.50).formatToComponents({
+  locale: 'de-DE',
+  currency: 'EUR'
+})
+// {
+//   currency: "€",
+//   groupDelimiter: ".",
+//   decimalDelimiter: ",",
+//   formatted: "1.000,50",
+//   formattedWithSymbol: "1.000,50 €"
+// }
+
+// Turkish format
+money(1000.50).formatToComponents({
+  locale: 'tr-TR',
+  currency: 'TRY'
+})
+// {
+//   currency: "₺",
+//   groupDelimiter: ".",
+//   decimalDelimiter: ",",
+//   formatted: "1.000,50",
+//   formattedWithSymbol: "₺1.000,50"
+// }
+```
+
 ### Static Methods
 
 #### `Money.parse(value: string, options?: ParseOptions): Money`
@@ -304,6 +348,18 @@ export interface FormatOptions {
   precision?: number;                  // Decimal precision
   roundingStrategy?: RoundStrategy;    // Rounding strategy
   preventGrouping?: boolean;           // Disable thousands separator
+}
+```
+
+### Format Components
+
+```typescript
+export interface FormatComponents {
+  currency: string;           // Currency symbol (e.g., '$', '€', '₺')
+  groupDelimiter: string;    // Thousands separator (e.g., ',', '.', ' ')
+  decimalDelimiter: string;  // Decimal separator (e.g., '.', ',')
+  formatted: string;         // Formatted number without currency symbol
+  formattedWithSymbol: string; // Complete formatted string with currency symbol
 }
 ```
 
@@ -489,7 +545,6 @@ const templates = {
 // Format for US market
 price.format({
   locale: 'en-US',
-  currency: 'USD',
   templates,
 })  // "$ 1,234.57"
 
@@ -673,6 +728,45 @@ formatPrice(1000, 'tr-TR', 'USD')  // "$ 1.000,00"
 
 // User in Germany, default EUR
 formatPrice(1000, 'de-DE')  // "€ 1.000,00"
+```
+
+### Format Components Usage
+
+```typescript
+import { money } from '@enesbaspinar/money';
+
+const price = money(1234.56);
+const components = price.formatToComponents({
+  locale: 'en-US'
+});
+
+// Access individual parts
+console.log(components.currency);        // "$"
+console.log(components.groupDelimiter); // ","
+console.log(components.decimalDelimiter); // "."
+console.log(components.formatted);      // "1,234.56"
+console.log(components.formattedWithSymbol); // "$1,234.56"
+
+// Use in React/Vue components
+function PriceDisplay({ amount }: { amount: number }) {
+  const comp = money(amount).formatToComponents({ locale: 'en-US', currency: 'USD' });
+  
+  return (
+    <div className="price">
+      <span className="currency">{comp.currency}</span>
+      <span className="amount">{comp.formatted}</span>
+    </div>
+  );
+}
+
+// Currency override example
+const turkishPrice = money(1000.50);
+const componentsTR = turkishPrice.formatToComponents({
+  locale: 'tr-TR',
+  currency: 'USD'  // Override currency
+});
+
+console.log(componentsTR.formattedWithSymbol); // "$1.000,50" - Turkish format, USD currency
 ```
 
 ## 📊 Performance
