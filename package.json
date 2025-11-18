@@ -34,11 +34,14 @@
     "monetary",
     "calculation",
     "formatting",
-    "big.js",
+    "decimal",
+    "decimal.js-light",
     "intl",
     "typescript",
+    "lightweight",
     "ecommerce",
-    "finance"
+    "finance",
+    "zero-config"
   ],
   "homepage": "https://github.com/baspinarenes/money",
   "repository": {

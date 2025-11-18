@@ -10,12 +10,12 @@ A developer-friendly, precise, and flexible money library that handles monetary 
 ## ✨ Features
 
 - 🎯 **Zero-Config**: Works out of the box, uses browser locale automatically
-- 🔢 **Precise Math**: Uses `big.js` to avoid floating-point errors
+- 🔢 **Precise Math**: Uses `decimal.js-light` for accurate decimal arithmetic
 - 🌍 **International**: Full Intl API support for all locales
-- 🎨 **Custom Templates**: Define custom formatting templates per locale
+- 🎨 **Custom Templates**: Define custom formatting templates
 - 🔗 **Chainable**: Fluent API for easy chaining
 - 📦 **Small**: <10KB gzipped bundle size
-- 💪 **TypeScript**: Full type safety
+- 💪 **TypeScript**: Full type safety with comprehensive types
 
 ## 📦 Installation
 
@@ -806,12 +806,6 @@ const componentsTR = turkishPrice.formatToComponents({
 
 console.log(componentsTR.formattedWithSymbol); // "$1.000,50" - Turkish format, USD currency
 ```
-
-## 📊 Performance
-
-- **Bundle Size**: <10KB gzipped
-- **Operations**: <1ms per operation
-- **Memory**: Efficient immutable design
 
 ## 🌐 Browser Support
 
