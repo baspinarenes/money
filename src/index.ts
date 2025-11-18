@@ -5,7 +5,7 @@ const money = (value: MoneyInput) =>  new Money(value);
 
 export { ComparisonResult, RoundStrategy } from './types';
 export type {
-  FormatOptions,
+  FormatComponents, FormatOptions,
   FormatPart, MoneyInput, ParseOptions
 } from './types';
 export { money as createMoney, money, Money };
