@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import Decimal from 'decimal.js-light';
 import { FormatOptions, FormatPart, RoundStrategy } from '../types';
 import { normalizeCurrency, normalizeLocale, parseLocale } from '../utils/locale';
 import { round } from '../utils/math';
@@ -164,9 +164,9 @@ export class MoneyFormatter {
       return value;
     }
 
-    const valueBig = new Big(value);
+    const valueDec = new Decimal(value);
     const finalStrategy = roundingStrategy ?? RoundStrategy.NEAREST;
-    const rounded = round(valueBig, precision, finalStrategy);
+    const rounded = round(valueDec, precision, finalStrategy);
     return rounded.toNumber();
   }
 

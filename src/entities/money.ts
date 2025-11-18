@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import Decimal from 'decimal.js-light';
 import { MoneyFormatter } from '../formatters/money-formatter';
 import {
   ComparisonResult,
@@ -8,27 +8,17 @@ import {
   MoneyInput,
   RoundStrategy,
 } from '../types';
-import {
-  add as addBig,
-  calculateDiscount,
-  compare as compareBig,
-  divide as divideBig,
-  multiply as multiplyBig,
-  round,
-  subtract as subtractBig,
-  toBig,
-} from '../utils/math';
 
 
 export class Money {
-  private readonly _value: Big;
+  private readonly _value: Decimal;
 
   constructor(value: MoneyInput) {
     if (value instanceof Money) {
       this._value = value._value;
     } else {
       try {
-        this._value = toBig(value);
+        this._value = this.toDecimal(value);
       } catch (error) {
         throw new Error(`Invalid money value: ${value}. ${error instanceof Error ? error.message : ''}`);
       }
@@ -43,66 +33,85 @@ export class Money {
     return this.value;
   }
 
-  private convertToBig(other: MoneyInput): Big {
-    return other instanceof Money ? other._value : toBig(other);
+  private toDecimal(value: MoneyInput): Decimal {
+    if (value instanceof Money) return value._value;
+    return new Decimal(value);
   }
 
   add(other: MoneyInput): Money {
-    const result = addBig(this._value, this.convertToBig(other));
+    const result = this._value.plus(this.toDecimal(other));
     return new Money(result.toString());
   }
 
   subtract(other: MoneyInput): Money {
-    const result = subtractBig(this._value, this.convertToBig(other));
+    const result = this._value.minus(this.toDecimal(other));
     return new Money(result.toString());
   }
 
   multiply(factor: number | string): Money {
-    const factorBig = toBig(factor);
-    const result = multiplyBig(this._value, factorBig);
+    const factorDecimal = new Decimal(factor);
+    const result = this._value.times(factorDecimal);
     return new Money(result.toString());
   }
 
   divide(divisor: number | string): Money {
-    const divisorBig = toBig(divisor);
-    const result = divideBig(this._value, divisorBig);
+    const divisorDecimal = new Decimal(divisor);
+    if (divisorDecimal.isZero()) {
+      throw new Error('Division by zero is not allowed');
+    }
+    const result = this._value.dividedBy(divisorDecimal);
     return new Money(result.toString());
   }
 
   round(precision?: number, roundingStrategy?: RoundStrategy): Money {
     if (!precision) {
-      // Default: round to 2 decimal places using banker's rounding
       precision = 2;
       roundingStrategy = RoundStrategy.UP;
     }
 
-    const rounded = round(this._value, precision, roundingStrategy);
+    let roundingMode: number;
+    switch (roundingStrategy) {
+      case RoundStrategy.UP:
+        roundingMode = Decimal.ROUND_UP;
+        break;
+      case RoundStrategy.DOWN:
+        roundingMode = Decimal.ROUND_DOWN;
+        break;
+      case RoundStrategy.NEAREST:
+      default:
+        roundingMode = Decimal.ROUND_HALF_UP;
+        break;
+    }
+
+    const rounded = this._value.toDecimalPlaces(precision, roundingMode);
     return new Money(rounded.toString());
   }
 
   discount(percentage: number | string): Money {
-    const result = calculateDiscount(this._value, percentage);
+    const discountRate = new Decimal(percentage).dividedBy(100);
+    const discountAmount = this._value.times(discountRate);
+    const result = this._value.minus(discountAmount);
     return new Money(result.toString());
   }
 
   equal(other: MoneyInput): boolean {
-    return this._value.eq(this.convertToBig(other));
+    return this._value.equals(this.toDecimal(other));
   }
 
   compare(other: MoneyInput): ComparisonResult {
-    return compareBig(this._value, this.convertToBig(other)) as ComparisonResult;
+    return this._value.comparedTo(this.toDecimal(other)) as ComparisonResult;
   }
 
   isZero(): boolean {
-    return this._value.eq(0);
+    return this._value.isZero();
   }
 
   isPositive(): boolean {
-    return this._value.gt(0);
+    return this._value.greaterThan(0);
   }
 
   isNegative(): boolean {
-    return this._value.lt(0);
+    return this._value.lessThan(0);
   }
 
   abs(): Money {
